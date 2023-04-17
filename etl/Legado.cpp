@@ -1,5 +1,11 @@
 #include <queue>
 #include <string>
+#include <stdexcept>
+#include <vector>
+#include <fstream>
+#include <sstream>
+
+using namespace std;
 
 class Legado {
     public: 
@@ -19,30 +25,31 @@ class Legado {
         int query_vehicle(string plate) {
 
             if (this->q.size() == queue_capacity) {
-                throw std::invalid_argument('Fila cheia!');
+                throw std::invalid_argument("Fila cheia!");
             }    
             string name;
             string model;
             string year;
 
             // codigo para abrir o arquivo e procurar a placa
-            vector[4] data;
+            vector<string> data;
             string line;
-            fstream file('legado_data.csv', ios::in);
+            fstream file("../data/legado_data.csv", ios::in);
             if(file.is_open()) {
                 while(getline(file, line)) {
                     if (line.substr(0, 7)==plate) {
                         stringstream s(line);
-                        while (getline(s, word, ', ')) {
+                        string word;
+                        while (getline(s, word, ',')) {
                             data.push_back(word); // adiciona placa, proprietario, modelo e ano (nesta ordem)
                         }
                     }    
                 }
             }
-            this.car_plate = data[0];
-            this.car_name = data[1];
-            this.car_model = data[2];
-            this.car_year = data[3];
+            this->car_plate = data[0];
+            this->car_name = data[1];
+            this->car_model = data[2];
+            this->car_year = data[3];
             return 0;
         }
 
