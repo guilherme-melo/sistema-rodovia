@@ -1,8 +1,5 @@
-#include <mutex>
 #include <pthread.h>
-#include <queue>
 #include <string>
-#include <stdexcept>
 #include <vector>
 #include <fstream>
 #include <sstream>
@@ -13,30 +10,33 @@ using namespace std;
 
 typedef int semaphore;
 
+//THIS FUNCTIONS ARE TEMPORARY JUST FOR COMPILE
+//TODO: IMPLEMENT SEMAPHORE CLASS/STRUCT WITH THIS TWO FUNCTIONS
+void up(int *x) {
+    x+=1;
+}
+
+void down(int *x) {
+    x-=1;
+}
+
+
+//class from API Legado
 class Legado {
     public: 
+
         string car_plate;
         string car_name;
         string car_model;
         string car_year;
-        int actual_capacity; 
-        int queue_capacity; //WAITING do codigo do barbeiro
-        queue<int> q;
+        int actual_capacity; //WAITING do codigo do barbeiro
+        int queue_capacity;
 
         Legado(int capacity) {
-            this->queue_capacity=capacity;
-            this->actual_capacity = 0;
+            this->queue_capacity=QUEUE_CAPACITY;
         };
 
         int query_vehicle(string plate) {
-
-            if (this->q.size() == queue_capacity) {
-                throw std::invalid_argument("Fila cheia!");
-            }    
-            string name;
-            string model;
-            string year;
-
             // codigo para abrir o arquivo e procurar a placa
             vector<string> data;
             string line;
@@ -73,50 +73,62 @@ class Legado {
 
 };
 
-void request(int *id_thread, Legado** legado, semaphore* requests, semaphore* legado_api, semaphore* mutex, vector<vector<string>>* &return_data) {
+//Struct for passing multiple arguments into threads
+struct arg_struct {
+    string plate;
+    int id_thread_;
+    Legado* legado_ ;
+    semaphore* requests_;
+    semaphore* legado_api_;
+    semaphore* mutex_;
+    vector<vector<string>>* return_data_;
+};
+
+//From here, we begin our implementation of sleeping barber
+
+//Client function
+void * request(void *arguments) {
+    struct arg_struct *args = (struct arg_struct *) arguments;
     vector<string> car_data;
-    down(&mutex);
-    if (legado->actual_capacity < QUEUE_CAPACITY) {
+    down(args->mutex_);
+    if ((args->legado_)->actual_capacity < args->legado_->queue_capacity) {
 
         //Check-in
-        legado->actual_capacity += 1;
-        up(&requests); //Adiciona que tem uma request pra ser processada
-        up(&mutex); //Libera a classe para que outras requests também solicitem
+        args->legado_->actual_capacity += 1;
+        up(args->requests_); //Adiciona que tem uma request pra ser processada
+        up(args->mutex_); //Libera a classe para que outras requests também solicitem
         
-        down(&legado_api);
+        down(args->legado_api_);
         
         //Get informations about this car
-        car_data[0] = legado->car_plate;
-        car_data[1] = legado->car_name;
-        car_data[2] = legado->car_model;
-        car_data[3] = legado->car_year;
-
-        return_data[id_thread] = car_data; //Save the informations putting the data into the global vector in the right position
+        car_data[0] = args->legado_->car_plate;
+        car_data[1] = args->legado_->car_name;
+        car_data[2] = args->legado_->car_model;
+        car_data[3] = args->legado_->car_year;
+        args->return_data_->at(args->id_thread_) = car_data; //Save the informations putting the data into the global vector in the right position
     } else { //Fila ja estava cheia, saindo e continuando sem fazer nada
-        up(&mutex);
-    }    
-}
-
-void procces_request(string plate, Legado* legado, semaphore requests, semaphore legado_api, semaphore mutex) {
-    
-    while (true) {
-        down(&requests);
-        down(&mutex);
-        legado->actual_capacity -= 1;
-
-        up(&legado_api);
-        up(&mutex);
-
-        //Analyse
-        legado->query_vehicle(plate);
+        up(args->mutex_); //Para esses que não tiveram os dados, o array vai ficar vazio.
     }
 }
 
+//Barber function
+void * procces_request(void *arguments) {
+    struct arg_struct *args = (struct arg_struct *) arguments;
+    while (true) {
+        down(args->requests_);
+        down(args->mutex_);
+        args->legado_->actual_capacity -= 1;
 
+        up(args->legado_api_);
+        up(args->mutex_);
 
+        //Analyse
+        args->legado_->query_vehicle(args->plate);
+    }
+}
 
-//THREAD 4
-int get_info(vector<string> data) {
+//THREAD 4 with sleeping barber
+vector<vector<string>> get_info(vector<string> data) {
     
     //Get vector with unique plates from the data
     vector<string> plates;
@@ -135,23 +147,33 @@ int get_info(vector<string> data) {
     semaphore legado_api = 0;
     semaphore mutex = 1;
 
-    pthread_t thr_request[N_PLATES], thr_procces;
+    arg_struct args = {
+        "init",
+        0,
+        legado,
+        &requests,
+        &legado_api,
+        &mutex,
+        &return_data
+    };
+
+    pthread_t thr_request[N_PLATES], thr_proccess;
 
     //Creating the request threads
     for(int i=0; i<N_PLATES; i++) {
-        pthread_create(&thr_request[i], NULL, &request, (&i, &legado, &requests, &legado_api, &mutex, &return_data));
+        args.id_thread_ = i;
+        args.plate = plates[i];
+        pthread_create(&thr_request[i], NULL, request, &args);
     }
 
-    pthread_create(&thr_procces, NULL, procces_request, NULL); //TODO: implementar parametros aqui
+    pthread_create(&thr_proccess, NULL, procces_request, &args); //TODO: implementar parametros aqui
 
     for (int i=0; i<N_PLATES; i++) {
-        pthread_join(thr_requests[i], NULL);
+        pthread_join(thr_request[i], NULL);
     }
 
     return return_data;
 }
-
-
 
 int main() {
     return 0;
