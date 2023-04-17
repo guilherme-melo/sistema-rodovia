@@ -7,7 +7,7 @@
 #include <fstream>
 #include <sstream>
 
-#define QUEUE_CAPACITY 5
+#define QUEUE_CAPACITY 10
 
 using namespace std;
 
