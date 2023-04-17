@@ -66,7 +66,7 @@ class road:
         self.min_accel = 0
 
 def write_to_file(list_cars,timestamp):
-    id_file = "data/"+ str(timestamp) + ".txt"
+    id_file = "data/"+ str(timestamp) + "_mockdata.txt"
     str_file = ""
     for car in list_cars:
         str_file += (car.plate + " " + "(" + str(car.x) + "," + str(car.y) + ")" + "\n")
