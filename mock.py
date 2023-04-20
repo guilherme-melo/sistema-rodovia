@@ -42,11 +42,11 @@ class vehicle:
         self.plate = plate
         self.speed = 0
         self.acceleration = 0
-        self.colision = False
+        self.collision = False
 
 class road:
-    def __init__(self, name, lanes, size, cicles_to_remove_colision, speed_limit,
-                 prob_vehicle_surge,prob_lane_change,max_speed,min_speed,colision_risk,max_acceleration,max_decceleration):
+    def __init__(self, name, lanes, size, cicles_to_remove_collision, speed_limit,
+                 prob_vehicle_surge,prob_lane_change,max_speed,min_speed,collision_risk,max_acceleration,max_decceleration):
         self.name = name
         self.lanes = lanes
         self.size = size
@@ -55,8 +55,8 @@ class road:
         self.prob_lane_change = prob_lane_change
         self.max_speed = max_speed
         self.min_speed = min_speed
-        self.cicles_to_remove_colision = cicles_to_remove_colision
-        self.collision_risk = colision_risk
+        self.cicles_to_remove_collision = cicles_to_remove_collision
+        self.collision_risk = collision_risk
         self.max_acceleration = max_acceleration
         self.max_decceleration = max_decceleration # positivo 
 
@@ -66,7 +66,7 @@ class road:
         self.min_accel = 0
 
 def write_to_file(list_cars,timestamp):
-    id_file = "data/"+ str(timestamp) + ".txt"
+    id_file = "data/"+ str(timestamp) + "_mockdata.txt"
     str_file = ""
     for car in list_cars:
         str_file += (car.plate + " " + "(" + str(car.x) + "," + str(car.y) + ")" + "\n")
@@ -120,20 +120,20 @@ def main(road):
                     else:
                         car.y -= 1
 
-            trigger_colision = False
+            trigger_collision = False
             for i in range(car.speed):
                 # checa se há carros no meio do avanço do carro
                 achieved_speed = i
                 if matrix_cars[car.x + i][car.y] != "XXXXXXX":
-                    trigger_colision = True
+                    trigger_collision = True
                     collision_pos = car.x + i
                     plate_colided = matrix_cars[car.x + i][car.y]
                     break
             
             # forçar colisão se a probabilidade de colisão for maior que o random
-            if random.random() < road.collision_risk and trigger_colision:
+            if random.random() < road.collision_risk and trigger_collision:
                 car.x = collision_pos   # se tiver, colidiu (y)
-                car.colision = True
+                car.collision = True
                 print("Colided",car.plate)
                 # define que o carro em que ele bateu também colidiu
                 for car_2 in cars:
@@ -141,33 +141,33 @@ def main(road):
                         car_2.colided = True
 
             # se nao houver só atualiza a posicao do carro
-            if not trigger_colision:
+            if not trigger_collision:
                 matrix_cars[car.x + car.speed][car.y] = car.plate
                 car.x += car.speed
             
             # checa a possibilidade de o carro trocar de pista
-            if trigger_colision:
+            if trigger_collision:
                 # se conseguiu trocar de pista, nao ha mais risco de colisao
                 if car.y != 0: # para a esquerda
                     if matrix_cars[collision_pos][car.y - 1] != "XXXXXXX":
-                        trigger_colision = False
+                        trigger_collision = False
                         matrix_cars[collision_pos][car.y - 1] = car.plate
                 if car.y != road.lanes-1: # para a direita
-                    if matrix_cars[collision_pos][car.y + 1] != "XXXXXXX" and trigger_colision:
-                        trigger_colision = False
+                    if matrix_cars[collision_pos][car.y + 1] != "XXXXXXX" and trigger_collision:
+                        trigger_collision = False
                         matrix_cars[collision_pos][car.y - 1] = car.plate
                         
                 # se nao conseguiu trocar de pista, diminui a velocidade
-                if trigger_colision:
+                if trigger_collision:
                     if car.speed - (achieved_speed+1) < road.max_decceleration:
                         car.speed -= (achieved_speed+1)
                         matrix_cars[car.x + car.speed][car.y] = car.plate
-                        trigger_colision = False
+                        trigger_collision = False
 
 
-            if trigger_colision:
+            if trigger_collision:
                 car.x = collision_pos   # se tiver, colidiu (y)
-                car.colision = True
+                car.collision = True
                 print("Colided",car.plate)
                 # define que o carro em que ele bateu também colidiu
                 for car_2 in cars:
