@@ -169,6 +169,13 @@ int main() {
         }
     }
 
+    //Thread 1
+
+    //Thread 2
+
+    //Thread 3
+
+    //Thread 4
     vector<vector<string>> info_add_plates = get_info(plates);
     for (int i=0; i<info_add_plates.size(); i++) {
         for (string info : info_add_plates[i]) {
