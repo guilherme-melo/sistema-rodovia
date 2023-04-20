@@ -202,12 +202,15 @@ vector<vector<string>> get_info(vector<string> data) {
 int main() {
     vector<string> plates;
     string line;
-    fstream file("../data/29.txt", ios::in);
-    if(file.is_open()) {
+    ifstream file("./data/29_mockdata.txt");
+    if (file.is_open()){
         while(getline(file, line)) {
+            cout << line << endl;
             plates.push_back(line.substr(0,7));
-        }    
+            line.clear();
+        }
     }
+
 
     vector<vector<string>> info_add_plates = get_info(plates);
 
