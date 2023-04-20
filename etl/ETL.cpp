@@ -112,12 +112,13 @@ void * procces_request(void *arguments) {
 }
 
 //THREAD 4 with sleeping barber
-vector<vector<string>> get_info(vector<string> data) {
+vector<vector<string>> get_info(string data[]) {
+    cout <<"aa";
     
     //Get vector with unique plates from the data
     vector<string> plates;
-    for (string line : data) {
-        plates.push_back(line.substr(0,7));
+    for (int i=0; i<data->size(); i++) {
+        plates.push_back(data[i].substr(0,7));
     }
 
     //Get number of plates in this data (it will be the number of threads);
@@ -160,25 +161,20 @@ vector<vector<string>> get_info(vector<string> data) {
 }
 
 int main() {
-    vector<string> plates;
+    string plates[] ={"39AD932", "MGE5X36"};
     string line;
     ifstream file("./data/29_mockdata.txt");
     if (file.is_open()){
         while(getline(file, line)) {
-            cout << line.substr(0,7) << endl;
-            plates.push_back(line.substr(0,7));
-            line.clear();
         }
-        
     }
-    
-
 
     vector<vector<string>> info_add_plates = get_info(plates);
-    cout << "Fim do arquivo" << endl;
     for (int i=0; i<info_add_plates.size(); i++) {
         for (string info : info_add_plates[i]) {
             cout << info << endl;
         }
     }
+    cout << "Fim do arquivo" << endl;
+
 }
