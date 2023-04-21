@@ -35,9 +35,13 @@ class road:
         self.vehicles_to_remove = False
 
 # cria arquivo de texto com os dados
-def write_to_file(list_cars, timestamp, mode, lanes, size):
-    id_file = "data/"+ str(timestamp) + "_mockdata.txt"
+def write_to_file(name, list_cars, timestamp, mode, lanes, size):
+    id_file = "data/"+ name + "/" + str(timestamp) + "_mockdata.txt"
     str_file = ""
+
+    id_folder = os.path.dirname(id_file)
+    if not os.path.exists(id_folder):
+        os.makedirs(id_folder)
 
     for car in list_cars:
         if mode == "forward":
@@ -187,14 +191,14 @@ def main(road, mode):
         road.vehicles = cars
 
         # escreve dependendo do sentido da rodovia em questão
-        if mode == "forward":
-            write_to_file(road.vehicles, contador, "forward", road.lanes, road.size)
+        if mode == 1:
+            write_to_file(road.name, road.vehicles, contador, "forward", road.lanes, road.size)
         else:
-            write_to_file(road.vehicles, contador, "backward", road.lanes, road.size)
+            write_to_file(road.name, road.vehicles, contador, "backward", road.lanes, road.size)
 
 ponte = road("Ponte Rio-Niteroi", 4, 2000, 5, 100, .5, .1, 100, 60, .2, 5, 2)
-main(ponte, "forward")
-main(ponte, "backward")
-
-
-# falta colocar no folder da pista
+av_brasil = road("Av. Brasil", 3, 1500, 5, 90, .5, .1, 120, 60, .2, 5, 2)
+main(ponte, 1)
+main(ponte, -1)
+main(av_brasil, 1)
+main(av_brasil, -1)
