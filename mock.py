@@ -32,8 +32,6 @@ class road:
 
         self.vehicles = []
         self.vehicles_to_remove = False
-        
-        self.min_accel = 0
 
 # cria arquivo de texto com os dados
 def write_to_file(list_cars, timestamp, mode, lanes, size):
@@ -187,13 +185,12 @@ def main(road, mode):
                 cars.append(car)
         road.vehicles = cars
 
-
-        if mode == 1:
+        # escreve dependendo do sentido da rodovia em questão
+        if mode == "forward":
             write_to_file(road.vehicles, contador, "forward", road.lanes, road.size)
         else:
             write_to_file(road.vehicles, contador, "backward", road.lanes, road.size)
 
-
 ponte = road("Ponte Rio-Niteroi", 4, 2000, 5, 100, .5, .1, 100, 60, .2, 5, 2)
-main(ponte, 1)
-main(ponte, -1)
+main(ponte, "forward")
+main(ponte, "backward")
