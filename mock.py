@@ -36,7 +36,7 @@ class road:
 
 # cria arquivo de texto com os dados
 def write_to_file(name, speed_limit, list_cars, timestamp, mode, lanes, size):
-    id_file = "data/"+ name + "/" + str(timestamp) + "_" + name + "_" + str(speed_limit) + ".txt"
+    id_file = "data/"+ name + "/" + str(timestamp) + "_" + name + "_" + str(speed_limit) + "_mockdata.txt"
     str_file = ""
 
     id_folder = os.path.dirname(id_file)
