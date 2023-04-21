@@ -29,35 +29,23 @@ car_models = ["Jetta", "350Z", "TL", "E-Class", "CTS", "Equinox", "745", "TT", "
  "Ram 1500","Fox","Mazda3","Swift","Grand Am","Town & Country","Caprice"]
 
 current_dir = os.getcwd()
-csv_file_path = os.path.join(current_dir, 'car_data.csv')
+csv_file_path = os.path.join(current_dir, 'legado_data.csv')
 
-#Gerar todas as placas possíveis de 2 letras e 4 números
 letters = string.ascii_uppercase
 plates = []
 for letter1 in letters:
-    for number1 in range(10):
-        plate = f"{letter1}{number1}{number1}{number2}{number3}{number4}"
-        plates.append(plate)
     for letter2 in letters:
         for number1 in range(10):
             for number2 in range(10):
                 for number3 in range(10):
-                    for number4 in range(10):
-                        plate = f"{letter1}{letter2}{number1}{number2}{number3}{number4}"
+                        plate = f"{letter1}{letter2}{number1}{number2}{number3}"
                         plates.append(plate)
-
+print("Plates generated successfully")
 #Gerar nome, modelo e ano aleatórios para cada uma das placas
-car_data = []
-for plate in plates:
-    name = names.get_full_name()
-    model = random.choice(car_models)
-    year = random.randint(1960, 2023)
-    car_data.append([name, model, year, plate])
 
-#Criar um csv e salvar essas informações nele
 with open(csv_file_path, mode='w', newline='') as file:
-    writer = csv.writer(file)
-    writer.writerow(['Nome', 'Modelo', 'Ano', 'Placa'])
-    for row in car_data:
-        writer.writerow(row)
-    file.close
+    for plate in plates:
+        writer = csv.writer(file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow([plate, names.get_full_name(), random.choice(car_models), random.randint(1960, 2023)])
+file.close()
+print("CSV file generated successfully")
