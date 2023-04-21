@@ -1,6 +1,7 @@
 import random
 import numpy as np
 import string
+import os
     
 class vehicle:
     def __init__(self, x, y, plate, speed):
@@ -194,3 +195,6 @@ def main(road, mode):
 ponte = road("Ponte Rio-Niteroi", 4, 2000, 5, 100, .5, .1, 100, 60, .2, 5, 2)
 main(ponte, "forward")
 main(ponte, "backward")
+
+
+# falta colocar no folder da pista
