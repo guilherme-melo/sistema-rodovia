@@ -36,13 +36,20 @@ class road:
         self.min_accel = 0
 
 # cria arquivo de texto com os dados
-def write_to_file(list_cars,timestamp):
+def write_to_file(list_cars, timestamp, mode, lanes, size):
     id_file = "data/"+ str(timestamp) + "_mockdata.txt"
     str_file = ""
-    for car in list_cars:
-        str_file += (car.plate + " " + "(" + str(car.x) + "," + str(car.y) + ")" + "\n")
 
-    f = open(id_file, "w")
+    for car in list_cars:
+        if mode == "forward":
+            str_file += (car.plate + " " + "(" + str(car.x) + "," + str(car.y) + ")" + "\n")
+        elif mode == "backward":
+            str_file += (car.plate + " " + "(" + str(size - car.x) + "," + str(lanes + car.y) + ")" + "\n")
+
+    if mode == "forward": # erases the file and overwrites it
+        f = open(id_file, "w")
+    elif mode == "backward": #appends the file
+        f = open(id_file, "a")
     f.write(str_file)
     f.close()
 
@@ -57,9 +64,12 @@ def car_plate():
     plate = letters + numbers
     return plate
 
-def main(road):
+def main(road, mode):
+    if mode not in {-1,1}:
+        raise ValueError("i must be -1 or 1")
     
     # while True:
+    road.vehicles = []
     for contador in range(30):
         
         # cria a matriz que representa a estrada
@@ -68,20 +78,17 @@ def main(road):
         cars = road.vehicles
         cars.sort(key = calc_speed) # ordena os carros por velocidade
 
-        print('ciclo novo')
         for car in cars:
-            print(car.speed)
+            print(car.x)
             # atualiza o contador de ciclos para remover a colisão
             if car.collision:
-                #print(car.plate, ": ", car.cicles_to_remove_collision)
                 car.cicles_to_remove_collision += 1
-                if car.cicles_to_remove_collision == 5:
+                if car.cicles_to_remove_collision == road.cicles_to_remove_collision:
                     print("Removed", car.plate)
                     cars.remove(car)
                     continue
 
             trigger_collision = False
-
 
             for i in range(car.speed):
                 # checa se há carros no meio do avanço do carro
@@ -101,7 +108,7 @@ def main(road):
                     if car_2.plate == plate_colided:
                         car_2.collision = True
 
-            # se nao houver só atualiza a posicao do carro
+            # se nao houver, só atualiza a posicao do carro
             if not trigger_collision:
                 matrix_cars[car.x + car.speed][car.y] = car.plate
                 car.x += car.speed
@@ -118,7 +125,7 @@ def main(road):
                 if car.y != road.lanes-1: # para a direita
                     if matrix_cars[collision_pos][car.y + 1] != "XXXXXX": #and trigger_collision:
                         trigger_collision = False
-                        matrix_cars[collision_pos][car.y - 1] = car.plate
+                        matrix_cars[collision_pos][car.y + 1] = car.plate
                         
                 # se nao conseguiu trocar de pista, diminui a velocidade
                 if trigger_collision:
@@ -181,10 +188,12 @@ def main(road):
         road.vehicles = cars
 
 
-        write_to_file(road.vehicles, contador) 
+        if mode == 1:
+            write_to_file(road.vehicles, contador, "forward", road.lanes, road.size)
+        else:
+            write_to_file(road.vehicles, contador, "backward", road.lanes, road.size)
 
-# to-do
-# fazer a pista de volta
 
-ponte = road("Ponte Rio-Niteroi", 4, 2000, 20, 100, .5, .1, 100, 60, .2, 5, 2)
-main(ponte)
+ponte = road("Ponte Rio-Niteroi", 4, 2000, 5, 100, .5, .1, 100, 60, .2, 5, 2)
+main(ponte, 1)
+main(ponte, -1)
