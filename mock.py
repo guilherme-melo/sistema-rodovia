@@ -49,9 +49,9 @@ def write_to_file(name, speed_limit, list_cars, timestamp, mode, lanes, size):
         elif mode == "backward":
             str_file += (car.plate + " " + "(" + str(size - car.x) + "," + str(lanes + car.y) + ")" + "\n")
 
-    if mode == "forward": # erases the file and overwrites it
+    if mode == "forward": # apaga o arquivo e sobrescreve
         f = open(id_file, "w")
-    elif mode == "backward": #appends the file
+    elif mode == "backward": # adiciona ao final do arquivo
         f = open(id_file, "a")
     f.write(str_file)
     f.close()
@@ -68,8 +68,8 @@ def car_plate():
     return plate
 
 def main(road, mode):
-    if mode not in {-1,1}:
-        raise ValueError("i must be -1 or 1")
+    if mode not in {"forward", "backward"}:
+        raise ValueError("mode must be 'forward' or 'backward'")
     
     # while True:
     road.vehicles = []
@@ -191,14 +191,12 @@ def main(road, mode):
         road.vehicles = cars
 
         # escreve dependendo do sentido da rodovia em questão
-        if mode == 1:
-            write_to_file(road.name, road.speed_limit, road.vehicles, contador, "forward", road.lanes, road.size)
-        else:
-            write_to_file(road.name, road.speed_limit, road.vehicles, contador, "backward", road.lanes, road.size)
+        write_to_file(road.name, road.speed_limit, road.vehicles, contador, mode, road.lanes, road.size)
+
 
 ponte = road("Ponte Rio-Niteroi", 4, 2000, 5, 100, .5, .1, 100, 60, .2, 5, 2)
 av_brasil = road("Av. Brasil", 3, 1500, 5, 90, .5, .1, 120, 60, .2, 5, 2)
-main(ponte, 1)
-main(ponte, -1)
-main(av_brasil, 1)
-main(av_brasil, -1)
+main(ponte, "forward")
+main(ponte, "backward")
+main(av_brasil, "forward")
+main(av_brasil, "backward")
