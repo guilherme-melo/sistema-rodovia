@@ -8,6 +8,7 @@
 #include <condition_variable>
 #include <queue>
 #include <tuple>
+#include <algorithm>
 
 #ifndef ANALYSIS_HPP
 #define ANALYSIS_HPP
