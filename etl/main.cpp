@@ -233,7 +233,8 @@ Road calc_accel(Road speed, Road *old_speeds){
 
 // Calcula o risco de colisão de cada carro dada a posicao, velocidade e aceleracao calculadas
 // para uma pista
-Lane calc_collision_risk(Lane positions, Lane speed, Lane accel) {
+void calc_collision_risk(Lane positions, Lane speed, Lane accel, Lane* 
+) {
     Lane collision_risk;
 
     // Ordena os carros por posicao
@@ -242,8 +243,6 @@ Lane calc_collision_risk(Lane positions, Lane speed, Lane accel) {
          { return get<1>(a) < get<1>(b); });
 
     // Encontra a velocidade e aceleracao de cada carro
-
-    cout << positions.size() << endl;
     for (int i = 0; i < positions.size(); i++)
     {
         for (int j = 0; j < speed.size(); j++)
@@ -302,7 +301,7 @@ Lane calc_collision_risk(Lane positions, Lane speed, Lane accel) {
         }
     }
 
-    return collision_risk;
+    //return collision_risk;
 }
 
 
@@ -363,6 +362,38 @@ vector<vector<tuple<string,bool>>> cars_above_limit(int limit, Road matrix_speed
     }
     return answer;
 }
+
+void prepare_to_barber(positions_list, Legado legado) {
+    vector<vector<string>> cars_data;
+    for (int i = 0; i < positions_list.size(); i++) {
+        for (int j = 0; j < positions_list[i].size(); j++) {
+            for (int k = 0; k < positions_list[i][j].size(); k++) {
+                vector<string> car_data;
+                //iniciar 3 strings possivelmente
+                cars_data.push_back(car_data);
+                }
+            }
+        }
+
+    vector<thread> t_vec;
+    int recount = 0;
+    mutex m;
+    for (int i = 0; i < positions_list.size(); i++) {
+        for (int j = 0; j < positions_list[i].size(); j++) {
+            for (int k = 0; k < positions_list[i][j].size(); k++) {
+                string plate = get<0>(positions_list[i][j][k]);
+                t_vec.push_back(thread(&Legado::request, ref(legado), plate, ref(cars_data), recount, ref(m)));
+                recount++;
+            }
+        }
+    }
+
+    cout << recount << endl;
+    for (int i = 0; i < t_vec.size(); i++) {
+        t_vec[i].join();
+    }
+}
+
 
 int main() //thread calculations
 {
@@ -475,42 +506,11 @@ int main() //thread calculations
             }
         }
 
-        
-
 
         cout <<"Números de carros na simulação: " << n_carros_simulacao << endl;
         int n_road = roads.size() - 2;
         cout << "Número de rodovias presentes na simulação: " << n_road << endl;
 
-        //b
-        vector<vector<string>> cars_data;
-        for (int i = 0; i < positions_list.size(); i++) {
-            for (int j = 0; j < positions_list[i].size(); j++) {
-                for (int k = 0; k < positions_list[i][j].size(); k++) {
-                    vector<string> car_data;
-                    //iniciar 3 strings possivelmente
-                    cars_data.push_back(car_data);
-                }
-            }
-        }
-
-        
-        vector<thread> t_vec;
-        int recount = 0;
-        mutex m;
-        for (int i = 0; i < positions_list.size(); i++) {
-            for (int j = 0; j < positions_list[i].size(); j++) {
-                for (int k = 0; k < positions_list[i][j].size(); k++) {
-                    string plate = get<0>(positions_list[i][j][k]);
-                    t_vec.push_back(thread(&Legado::request, ref(legado), plate, ref(cars_data), recount, ref(m)));
-                    recount++;
-                }
-            }
-        }
-        cout << recount << endl;
-        for (int i = 0; i < t_vec.size() ; i++) {
-            t_vec[i].join();
-        } 
         //b
 
 
