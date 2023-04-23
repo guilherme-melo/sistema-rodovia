@@ -7,6 +7,7 @@
 #include <iostream>
 #include <condition_variable>
 #include <queue>
+#include <tuple>
 
 
 #ifndef Legado_HPP
@@ -30,7 +31,7 @@ class Legado {
 
         void queryAPI(string plate);
 
-        vector<string> request(string plate);
+        void request(string plate, vector<vector<string>> &list_data, int i, mutex &m);
 
 
         //FIFO queue of strings

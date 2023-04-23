@@ -3,27 +3,7 @@
 
 using namespace std;
 
-class car {
-    public:
-        string plate;
-        string position;
-        int speed;
-        int acceleration;
-        string risk;
-        string model;
-        string year;
-        string name;
-        car() {
-            plate = "";
-            position = "";
-            speed = 0;
-            acceleration = 0;
-            risk = "";
-            model = "";
-            year = "";
-            name = "";
-        }
-};
+typedef vector<tuple<string, int, int, bool, string, string, string>> carsData;
 
 //Legado Class
 Legado::Legado() {
@@ -75,7 +55,7 @@ void Legado::queryAPI(string plate) {
     this->name = data[3];
 }
 
-vector<string> Legado::request(string plate) {
+void Legado::request(string plate, vector<vector<string>> &list_data, int i, mutex &m) {
     vector<string> data; //Create the vector that will be returned
     this->queueMutex.lock(); //Lock the queue mutex as we are going to access and modify the queue
     if (this->queueCount < this->queueCapacity) {
@@ -94,33 +74,18 @@ vector<string> Legado::request(string plate) {
         this->queueCount--;
         this->queueMutex.unlock();
     }
-
     else {
         this->queueMutex.unlock(); //Unlock the queue mutex as we are done accessing and modifying the queue
         data.push_back("");//If the queue is full then we return an empty vector
         data.push_back("");
         data.push_back("");
     }
-
-    cout << "Data: " << data[0] << " " << data[1] << " " << data[2] << endl;
-    return data;
+        m.lock(); //Lock the mutex so we can access and modify the list_data vector
+        //cout << "Returning data for plate: " << i << endl;
+        list_data[i] = data; //Add the data to the list_data vector
+        m.unlock(); //Unlock the mutex so other threads can access and modify the list_data vector
     }
 
-
-int main() {
-    int qcap = 10;
-    Legado legado(qcap);
-
-    thread t[100];
-    for (int i = 0; i < 100; i++) {
-        t[i] = thread(&Legado::request, &legado, "AA110");
-    }
-    for (int i = 0; i < 100; i++) {
-        t[i].join();
-    }
-
-    return 0;
-}
 
 
 
