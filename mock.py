@@ -62,8 +62,8 @@ def calc_speed(car):
 
 def car_plate():
     # cria a placa do carro
-    letters = ''.join(random.choices(string.ascii_uppercase, k=4))
-    numbers = ''.join(random.choices(string.digits, k=2))
+    letters = ''.join(random.choices(string.ascii_uppercase, k=2))
+    numbers = ''.join(random.choices(string.digits, k=3))
     plate = letters + numbers
     return plate
 
