@@ -432,16 +432,14 @@ int main() //thread calculations
             for (int j = 0; j < positions_list[i].size(); j++) {
                 for (int k = 0; k < positions_list[i][j].size(); k++) {
                     string plate = get<0>(positions_list[i][j][k]);
-                    t_vec.push_back(thread(&Legado::request, &legado, plate, ref(cars_data), recount, ref(m)));
+                    t_vec.push_back(thread(&Legado::request, ref(legado), plate, ref(cars_data), recount, ref(m)));
                     recount++;
                 }
             }
         }
         cout << recount << endl;
         for (int i = 0; i < t_vec.size() ; i++) {
-            cout << "Thread " << i  ;
             t_vec[i].join();
-            cout << "joined" << endl;
         }
         cout << "------------------" << endl;
         int count_cars = 0;
@@ -451,9 +449,29 @@ int main() //thread calculations
                     cout << "---------------" << endl;
                     cout << "Placa: " << get<0>(positions_list[i][j][k]) << endl;
                     cout << "Posição: " << get<1>(positions_list[i][j][k]) << endl;
-                    cout << "Velocidade: " << get<1>(speeds_list[i][j][k]) << endl;
-                    cout << "Aceleração: " << get<1>(accelerations_list[i][j][k]) << endl;
-                    cout << "Risco de colisão: " << get<1>(collision_risk_list[i][j][k]) << endl;
+                    if (speeds_list.size() == 0) {
+                        cout << "Velocidade: " << "Sem dados suficientes" << endl;
+                    }
+                    else {
+                        cout << "Velocidade: " << get<1>(speeds_list[i][j][k]) << endl;
+                    }
+
+                    if (accelerations_list.size() == 0) {
+                        cout << "Aceleração: " << "Sem dados suficientes" << endl;
+                    }
+                    else {
+                        cout << "Aceleração: " << get<1>(accelerations_list[i][j][k]) << endl;
+                    }
+
+                    if (collision_risk_list.size() == 0) {
+                        cout << "Risco de colisão: " << "Sem dados suficientes" << endl;
+                    }
+                    else {
+                        cout << "Risco de colisão: " << get<1>(collision_risk_list[i][j][k]) << endl;
+                    }
+                    //cout << "Velocidade: " << get<1>(speeds_list[i][j][k]) << endl;
+                    //cout << "Aceleração: " << get<1>(accelerations_list[i][j][k]) << endl;
+                    //cout << "Risco de colisão: " << get<1>(collision_risk_list[i][j][k]) << endl;
                     cout << "Modelo: " << cars_data[count_cars][0] << endl;
                     cout << "Ano: " << cars_data[count_cars][1] << endl;
                     cout << "Proprietário: " << cars_data[count_cars][2] << endl;
