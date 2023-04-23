@@ -48,10 +48,10 @@ void Legado::queryAPI(string plate) {
                 break;
             }
             else {
-                data.push_back(plate);
-                data.push_back("Trem Bala da Colina");
-                data.push_back("2009");
-                data.push_back("Juninho Pernambucano");
+                data.push_back("Não encontrado na base");
+                data.push_back("Não encontrado na base");
+                data.push_back("Não encontrado na base");
+                data.push_back("Não encontrado na base");
             }
         }
     }

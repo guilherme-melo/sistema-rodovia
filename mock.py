@@ -15,13 +15,13 @@ class vehicle:
         self.cicles_to_remove_collision = 0
 
 class road:
-    def __init__(self, name, lanes, size, cicles_to_remove_collision, speed_limit,
+    def __init__(self, name, lanes, size, cicles_to_remove_collision,
                  prob_vehicle_surge, prob_lane_change, max_speed, min_speed, collision_risk,
                  max_acceleration, max_decceleration):
         self.name = name
         self.lanes = lanes
         self.size = size
-        self.speed_limit = speed_limit # limite físico para qualquer carro
+        self.speed_limit = 200 # limite físico para qualquer carro
         self.prob_vehicle_surge = prob_vehicle_surge
         self.prob_lane_change = prob_lane_change
         self.max_speed = max_speed
@@ -35,8 +35,8 @@ class road:
         self.vehicles_to_remove = False
 
 # cria arquivo de texto com os dados
-def write_to_file(name, speed_limit, list_cars, timestamp, mode, lanes, size):
-    id_file = "data/"+ name + "/" + str(timestamp) + "_" + name + "_" + str(speed_limit) + "_mockdata.txt"
+def write_to_file(name, max_speed, list_cars, timestamp, mode, lanes, size):
+    id_file = "data/"+ name + "/" + str(timestamp) + "_" + name + "_" + str(max_speed) + "_mockdata.txt"
     str_file = ""
 
     id_folder = os.path.dirname(id_file)
@@ -191,11 +191,11 @@ def main(road, mode):
         road.vehicles = cars
 
         # escreve dependendo do sentido da rodovia em questão
-        write_to_file(road.name, road.speed_limit, road.vehicles, contador, mode, road.lanes, road.size)
+        write_to_file(road.name, road.max_speed, road.vehicles, contador, mode, road.lanes, road.size)
 
 
-ponte = road("Ponte Rio-Niteroi", 4, 2000, 5, 100, .5, .1, 100, 60, .2, 5, 2)
-av_brasil = road("Av. Brasil", 3, 1500, 5, 90, .5, .1, 120, 60, .2, 5, 2)
+ponte = road("Ponte Rio-Niteroi", 4, 2000, 5, .5, .1, 120, 60, .2, 5, 2)
+av_brasil = road("Av. Brasil", 3, 1500, 5, .5, .1, 120, 60, .2, 5, 2)
 main(ponte, "forward")
 main(ponte, "backward")
 main(av_brasil, "forward")
