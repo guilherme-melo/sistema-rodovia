@@ -47,19 +47,18 @@ void Legado::queryAPI(string plate) {
                 }
                 break;
             }
-            else {
-                data.push_back("Não encontrado na base");
-                data.push_back("Não encontrado na base");
-                data.push_back("Não encontrado na base");
-                data.push_back("Não encontrado na base");
-            }
         }
     }
-
+    if (data.size() < 4) {
+        data.push_back("");
+        data.push_back("");
+        data.push_back("");
+        data.push_back("");
+    }
     this->plate = data[0];
-    this->model = data[1];
-    this->year = data[2];
-    this->name = data[3];
+    this->name = data[1];
+    this->model = data[2];
+    this->year = data[3];
 }
 
 void Legado::request(string plate, vector<vector<string>> &list_data, int i, mutex &m) {

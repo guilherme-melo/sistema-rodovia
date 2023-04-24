@@ -2,6 +2,8 @@ import random
 import numpy as np
 import string
 import os
+#sleep import
+import time
     
 class vehicle:
     def __init__(self, x, y, plate, speed):
@@ -36,7 +38,8 @@ class road:
 
 # cria arquivo de texto com os dados
 def write_to_file(name, max_speed, list_cars, timestamp, mode, lanes, size):
-    id_file = "data/"+ name + "/" + str(timestamp) + "_" + name + "_" + str(max_speed) + "_mockdata.txt"
+    
+    id_file = "data/" + name  + "_" + str(max_speed) + "/" + timestamp + "_mockdata.txt"
     str_file = ""
 
     id_folder = os.path.dirname(id_file)
@@ -73,8 +76,9 @@ def main(road, mode):
     
     # while True:
     road.vehicles = []
-    for contador in range(30):
-        
+    contador = -1
+    while True:
+        contador += 1
         # cria a matriz que representa a estrada
         matrix_cars = np.full((road.size,road.lanes), "XXXXXX")
         
@@ -191,12 +195,13 @@ def main(road, mode):
         road.vehicles = cars
 
         # escreve dependendo do sentido da rodovia em questão
-        write_to_file(road.name, road.max_speed, road.vehicles, contador, mode, road.lanes, road.size)
+        tempo = int(1000*time.time())
+        tempo = str(tempo)[-9:]
 
+        write_to_file(road.name, road.max_speed, road.vehicles, tempo, mode, road.lanes, road.size)
+        time.sleep(0.05)
 
-ponte = road("Ponte Rio-Niteroi", 4, 2000, 5, .5, .1, 120, 60, .2, 5, 2)
-av_brasil = road("Av. Brasil", 3, 1500, 5, .5, .1, 120, 60, .2, 5, 2)
-main(ponte, "forward")
-main(ponte, "backward")
+var = input("Digite o nome do arquivo: ")
+
+av_brasil = road(var, 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2)
 main(av_brasil, "forward")
-main(av_brasil, "backward")
