@@ -1,6 +1,6 @@
 # Sistema de monitoramento de rodovias
 
-Essa é uma aplicação que produz análises a partir de dados de trágeco simulados. O simulador dos dados (*mock*) foi implementado em Python e o sistema de monitoramento em C++.
+Essa é uma aplicação que produz análises a partir de dados de tráfego simulados. O simulador dos dados (*mock*) foi implementado em Python e o sistema de monitoramento em C++.
 
 ## Execução o ETL
 
@@ -14,11 +14,11 @@ E em seguida:
 Linux:
 ```./main```
 
-No arquivo `main.cpp`, é possível personalizar o tamanho da fila do barbeiro atualizando a variável `capacity` na linha _.
+No arquivo `main.cpp`, é possível personalizar o tamanho da fila do barbeiro alterando a variável `capacity` na linha _.
 
-## Personalização do *mock*
+## Personalização das rodovias
 
-Como cada instância do mock é uma rodovia, de modo que o usuário pode personalizar os parâmetros que orientam e geração dos dados. A ordem dos parâmetros é:
+Cada instância do *mock* é uma rodovia, de modo que o usuário pode personalizar os parâmetros que orientam a geração dos dados.  A ordem dos parâmetros é:
 
 `name`: nome da rodovia
 
@@ -42,9 +42,7 @@ Como cada instância do mock é uma rodovia, de modo que o usuário pode persona
 
 `max_decceleration`: desaceleração máxima de um veículo na rodovia
 
-Para inicializar a pista nos dois sentidos, é necessário chamar a função `main( )` duas vezes, definindo o objeto `road` criado e o parâmetro `forward` e `backward`.
-
-Por exemplo:
+Ao executar o `mock.py` no terminal, o usuário precisará definir somente o nome da rodovia e o número de pistas em cada lado da rodovia (isto é, um inteiro par maior que zero). Caso deseje alterar qualquer outro parâmetro, deverá ajustar diretamente o código. Por exemplo:
 
 ```
 ponte = road(name = "Ponte Rio-Niteroi", 
@@ -58,8 +56,7 @@ ponte = road(name = "Ponte Rio-Niteroi",
              collision_risk = .2, 
              max_acceleration = 5, 
              max_decceleration = 2)
-            
-main(ponte, "forward")
-main(ponte, "backward")
+
+main(ponte)
 ```
 
