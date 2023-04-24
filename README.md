@@ -1,11 +1,9 @@
 # Sistema de monitoramento de rodovias
-This is an application that produces analysis from mocked traffic data, it's implmented in C++ and uses threads to achieve paralelism.
 
 Essa é uma aplicação que produz análises a partir de dados de trágeco simulados. O simulador dos dados (*mock*) foi implementado em Python e o sistema de monitoramento em C++.
 
-# Execução o ETL
+## Execução o ETL
 
-To compile the ETL, go to the etl folder and run 
 Para compilar o ETL, entre no diretório `etl` e execute no terminal:
 
 Linux:
@@ -16,7 +14,9 @@ E em seguida:
 Linux:
 ```./main```
 
-# Personalização do *mock*
+No arquivo `main.cpp`, é possível personalizar o tamanho da fila do barbeiro atualizando a variável `capacity` na linha _.
+
+## Personalização do *mock*
 
 Como cada instância do mock é uma rodovia, de modo que o usuário pode personalizar os parâmetros que orientam e geração dos dados. A ordem dos parâmetros é:
 
