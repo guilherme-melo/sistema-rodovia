@@ -4,10 +4,10 @@ Essa é uma aplicação que produz análises a partir de dados de tráfego simul
 
 ## Execução o ETL
 
-Para compilar o ETL, entre no diretório `etl` e execute no terminal:
+Para compilar o ETL, entre na raiz do projeto e execute no terminal:
 
 Linux:
-```g++ -pthread -o main ETL.cpp ```
+```g++ -pthread -o main etl/main.cpp ```
 
 E em seguida:
 
