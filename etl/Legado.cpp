@@ -20,19 +20,19 @@ string Legado::getPlate() {
     return this->plate;
 }
 
-string Legado::getModel() {
+string Legado::get_model() {
     return this->model;
 }
 
-string Legado::getYear() {
+string Legado::get_year() {
     return this->year;
 }
 
-string Legado::getName() {
+string Legado::get_name() {
     return this->name;
 }
 
-void Legado::queryAPI(string plate) {
+void Legado::query_vehicle(string plate) {
     fstream file("legado_data.csv");
     vector<string> data;
     if (file.is_open()) {
@@ -69,10 +69,10 @@ void Legado::request(string plate, vector<vector<string>> &list_data, int i, mut
         this->queueMutex.unlock();
 
         this->isExecutingMutex.lock();//Only one thread can be executing the queryAPI function at a time
-        this->queryAPI(plate); //Simulates the legacy system querying the API
-        data.push_back(getModel());
-        data.push_back(getYear());
-        data.push_back(getName());
+        this->query_vehicle(plate); //Simulates the legacy system querying the API
+        data.push_back(get_model());
+        data.push_back(get_year());
+        data.push_back(get_name());
         this->isExecutingMutex.unlock(); //Unlock the mutex so that other threads can execute the queryAPI function
 
         this->queueMutex.lock(); //Locks the queue mutex so we can remove the done request from the queue

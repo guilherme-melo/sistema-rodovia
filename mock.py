@@ -19,11 +19,11 @@ class vehicle:
 class road:
     def __init__(self, name, lanes, size, cicles_to_remove_collision,
                  prob_vehicle_surge, prob_lane_change, max_speed, min_speed, collision_risk,
-                 max_acceleration, max_decceleration):
+                 max_acceleration, max_decceleration, speed_limit):
         self.name = name
         self.lanes = lanes
         self.size = size
-        self.speed_limit = 200 # limite físico para qualquer carro
+        self.speed_limit = speed_limit # limite físico para qualquer carro
         self.prob_vehicle_surge = prob_vehicle_surge
         self.prob_lane_change = prob_lane_change
         self.max_speed = max_speed
@@ -207,6 +207,6 @@ def main(road1,road2):
 
 var = input("Digite o nome do arquivo: ")
 
-rod_ida = road(var, 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2)
-rod_volta = road(var, 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2)
+rod_ida = road(var, 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
+rod_volta = road(var, 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
 main(rod_ida, rod_volta)

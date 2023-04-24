@@ -29,7 +29,7 @@ class Legado {
         mutex isExecutingMutex;//mutex to control access to isExecuting
         mutex queueMutex;//mutex to control access to queue
 
-        void queryAPI(string plate);
+        void query_vehicle(string plate);
 
         void request(string plate, vector<vector<string>> &list_data, int i, mutex &m);
 
@@ -39,9 +39,9 @@ class Legado {
         int queueCapacity;
 
         string getPlate();
-        string getModel();
-        string getYear();
-        string getName();
+        string get_model();
+        string get_year();
+        string get_name();
 };
 
 #endif
