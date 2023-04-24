@@ -227,7 +227,7 @@ Road calc_accel(Road speed, Road *old_speeds) {
 
 // Calcula o risco de colisão de cada carro dada a posicao, velocidade e aceleracao calculadas
 // para uma pista
-void calc_collision_risk(Lane* positions, Lane* speed, Lane* accel, Lane* c_risk, mutex &mtx_print){
+void calc_collision_risk(Lane* positions, Lane* speed, Lane* accel, Road* c_risk, mutex &mtx_print, mutex &mtx_risk){
     Lane collision_risk;
     Lane positions_n = *positions;
     // Ordena os carros por posicao
@@ -302,8 +302,10 @@ void calc_collision_risk(Lane* positions, Lane* speed, Lane* accel, Lane* c_risk
             previous_collision = false;
         }
     }
-
-    c_risk = &collision_risk;
+    
+    mtx_risk.lock();
+    c_risk->push_back(collision_risk);
+    mtx_risk.unlock();
     //return collision_risk;
 }
 
@@ -395,7 +397,10 @@ int main() //thread calculations
 
         // Pegando os dados mais recentes
         for (int roadId = 0; roadId < roads.size()-2; roadId++) {
-            string fileName = "./data/" + roads[roadId-2] + "/" + to_string(d) + "_" + roads[roadId] + "_120_mockdata.txt";// PEGAR O ARQUIVO MAIS RECENTE
+
+            string fileName = "./data/" + roads[roadId+2] + "/" + to_string(d) + "_" + roads[roadId+2] + "_120_mockdata.txt";// PEGAR O ARQUIVO MAIS RECENTE
+            cout << fileName << endl;
+
             Road positions = splitData(fileName);
             positions_list.push_back(positions);
 
@@ -427,13 +432,19 @@ int main() //thread calculations
                 Road collision_risk;
                 vector<thread> thread_vec;
                 mutex mtx_print;
+                mutex mtx_risk;
                 for (int i = 0; i < positions.size(); i++)
                 {
                     cout << positions[i].size() << endl;
                     Lane c_risk;
-                    thread_vec.push_back(thread(calc_collision_risk, &positions[i], &speeds[i], &accel[i], &c_risk , ref(mtx_print)));
+                    thread_vec.push_back(thread(calc_collision_risk, &positions[i], &speeds[i], &accel[i], &collision_risk , ref(mtx_print), ref(mtx_risk)));
                     //AQUI ESSAS INFORMAÇÕES JÁ DEVEM SER PRINTADAS NO CONSOLE;
-                    collision_risk.push_back(c_risk);
+                    //collision_risk.push_back(c_risk);
+                }
+
+                for (int i = 0; i < thread_vec.size(); i++)
+                {
+                    thread_vec[i].join();
                 }
 
                 collision_risk_list.push_back(collision_risk);
@@ -570,7 +581,6 @@ int main() //thread calculations
                 }
             }
         }
-
     }
     return 0;
 }
