@@ -40,7 +40,7 @@ Como cada instância do mock é uma rodovia, de modo que o usuário pode persona
 
 `max_acceleration`: aceleração máxima de um veículo na rodovia
 
-`max_decceleration`: desaceleração máxima de um veículo
+`max_decceleration`: desaceleração máxima de um veículo na rodovia
 
 Para inicializar a pista nos dois sentidos, é necessário chamar a função `main( )` duas vezes, definindo o objeto `road` criado e o parâmetro `forward` e `backward`.
 
