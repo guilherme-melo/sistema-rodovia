@@ -103,7 +103,7 @@ vector<string> get_roads()
 
 
 // Funcao de calculo de velocidade em uma thread
-void calc_speed_thread(Road positions, Road *old_position, Road *calculated_speed, int i, int j, mutex &mtx){
+void calc_speed_thread(Road positions, Road *old_position, Road *calculated_speed, int i, int j, mutex &mtx, int n_cicles){
     // Procura a posicao anterior do mesmo carro (pela placa)
     for (int y_old = 0; y_old < old_position->size(); y_old++)
     {
@@ -113,7 +113,7 @@ void calc_speed_thread(Road positions, Road *old_position, Road *calculated_spee
             {
                 // Calcula a velocidade atual (posicao atual - posicao anterior)
                 int speed = get<1>(positions[i][j]) - get<1>(old_position->at(y_old)[x_old]);
-                speed = abs(speed);
+                speed = (int) abs(speed)/n_cicles;
                 // Cria uma tupla (placa, velocidade) e insere no vetor de velocidades calculadas
                 tuple<string,int> plate_speed = make_tuple(get<0>(positions[i][j]), speed);
 
@@ -129,7 +129,7 @@ void calc_speed_thread(Road positions, Road *old_position, Road *calculated_spee
 
 // Calcula a velocidade de cada carro dada a posicao atual e a do ciclo anterior
 // As posicoes anteriores sao passadas por referencia para que possam ser atualizadas
-Road calc_speed(Road positions, Road* old_position){
+Road calc_speed(Road positions, Road* old_position, int n_cicles){
     Road calculated_speed;
     vector<thread> threads;
     mutex mtx;
@@ -149,7 +149,7 @@ Road calc_speed(Road positions, Road* old_position){
         for (int x = 0; x < positions[y].size(); x++)
         {
             count++; // Contamos o numero de threads (carros)
-            threads.push_back(thread(calc_speed_thread, positions, old_position, &calculated_speed, y, x, ref(mtx)));
+            threads.push_back(thread(calc_speed_thread, positions, old_position, &calculated_speed, y, x, ref(mtx), n_cicles));
         }
     }
 
@@ -296,6 +296,7 @@ void calc_collision_risk(Lane* positions, Lane* speed, Lane* accel, Road* c_risk
             // Se o carro anterior nao colidiu, marca o risco de colisao para o atual
             if (previous_collision == false)
             {
+                cout << get<0>(positions_n[i]) << " --> " << "Não possui Risco de Colisão" << endl;
                 collision_risk.push_back(make_tuple(get<0>(positions_n[i]), 0));
             }
             // Caso contrario, nao marca o risco de colisao para nenhum
@@ -511,7 +512,7 @@ int main() //thread calculations
 
     }
 
-    int capacity = 10; // Tamanho da fila do barbeiro
+    int capacity = 40; // Tamanho da fila do barbeiro
     Legado legado(capacity);
     while (true)
     {
@@ -574,14 +575,14 @@ int main() //thread calculations
 
             }
             else if (old_speeds->size() == 0) {
-                Road speeds = calc_speed(positions, old_positions); // thread pra calcular pra cada lane -> join
+                Road speeds = calc_speed(positions, old_positions,iter); // thread pra calcular pra cada lane -> join
                 speeds_list.push_back(speeds);
                 cout << "Without history data" << endl;
                 historySpeedsData[roadId] = speeds;
             }
 
             else {
-                Road speeds = calc_speed(positions, old_positions);
+                Road speeds = calc_speed(positions, old_positions,iter);
                 speeds_list.push_back(speeds);
                 Road accel = calc_accel(speeds, old_speeds); // threads pra calcular pra cada lane -> join
                 accelerations_list.push_back(accel);
@@ -604,7 +605,6 @@ int main() //thread calculations
                 }
 
                 collision_risk_list.push_back(collision_risk);
-
                 historySpeedsData[roadId] = speeds;
             }
 
@@ -644,13 +644,13 @@ int main() //thread calculations
             for (int j = 0; j < positions_list[i].size(); j++) {
                 n_carros_simulacao += positions_list[i][j].size();
             }
-            
+
             if (historyPositionsData[i].size() != 0) {
                 if (historySpeedsData[i].size() != 0) {
                     //Análise de carros acima da velocidade
                     vector<vector<tuple<string,bool>>> numbers_of_car = cars_above_limit(speed_limit_list[i], speeds_list[i]);
 
-            
+
                     cout << "------------------" << endl;
                     for (int i = 0; i < numbers_of_car.size(); i++) {
                         for (int j = 0; j < numbers_of_car[i].size(); j++) {
@@ -685,6 +685,7 @@ int main() //thread calculations
         for (int road = 0; road < positions_list.size(); road++) {
             for (int lane = 0; lane < positions_list[road].size(); lane++) {
                 for (int car = 0; car < positions_list[road][lane].size(); car++) {
+
                     cout << "---------------" << endl;
                     cout << "Placa: " << get<0>(positions_list[road][lane][car]) << endl;
                     cout << "Posição: " << get<1>(positions_list[road][lane][car]) << endl;
@@ -694,9 +695,9 @@ int main() //thread calculations
                         for (int lane_speed = 0; lane_speed < speeds_list[road_speed].size(); lane_speed++) {
                             for (int car_speed = 0; car_speed < speeds_list[road_speed][lane_speed].size(); car_speed++) {
                                 if (get<0>(speeds_list[road_speed][lane_speed][car_speed]) == get<0>(positions_list[road][lane][car])) {
-                                    cout << "Velocidade: " << get<1>(speeds_list[road_speed][lane_speed][car_speed]) << get<0>(speeds_list[road_speed][lane_speed][car_speed]) << endl;
-                                    cout << "Placa" << get<0>(positions_list[road][lane][car]) << endl;
+                                    cout << "Velocidade: " << get<1>(speeds_list[road_speed][lane_speed][car_speed]) << endl;
                                     speed_found = true;
+                                    break;
                                 }
                             }
                         }
@@ -710,8 +711,9 @@ int main() //thread calculations
                         for (int lane_acceleration = 0; lane_acceleration < accelerations_list[road_acceleration].size(); lane_acceleration++) {
                             for (int car_acceleration = 0; car_acceleration < accelerations_list[road_acceleration][lane_acceleration].size(); car_acceleration++) {
                                 if (get<0>(accelerations_list[road_acceleration][lane_acceleration][car_acceleration]) == get<0>(positions_list[road][lane][car])) {
-                                    cout << "Aceleração: " << get<1>(accelerations_list[road_acceleration][lane_acceleration][car_acceleration]) << "Placa" <<  get<0>(accelerations_list[road_acceleration][lane_acceleration][car_acceleration]) << endl;
+                                    cout << "Aceleração: " << get<1>(accelerations_list[road_acceleration][lane_acceleration][car_acceleration]) << endl;
                                     acceleration_found = true;
+                                    break;
                                 }
                             }
                         }
@@ -725,8 +727,9 @@ int main() //thread calculations
                         for (int lane_collision = 0; lane_collision < collision_risk_list[road_collision].size(); lane_collision++) {
                             for (int car_collision = 0; car_collision < collision_risk_list[road_collision][lane_collision].size(); car_collision++) {
                                 if (get<0>(collision_risk_list[road_collision][lane_collision][car_collision]) == get<0>(positions_list[road][lane][car])) {
-                                    cout << "Risco de colisão: " << get<1>(collision_risk_list[road_collision][lane_collision][car_collision]) << "Placa" <<  get<0>(collision_risk_list[road_collision][lane_collision][car_collision]) << endl;
+                                    cout << "Risco de colisão: " << get<1>(collision_risk_list[road_collision][lane_collision][car_collision]) << endl;
                                     collision_risk_found = true;
+                                    break;
                                 }
                             }
                         }

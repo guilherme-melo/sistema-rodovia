@@ -65,7 +65,6 @@ void Legado::request(string plate, vector<vector<string>> &list_data, int i, mut
     vector<string> data; //Create the vector that will be returned
     this->queueMutex.lock(); //Lock the queue mutex as we are going to access and modify the queue
     if (this->queueCount < this->queueCapacity) {
-        cout << "Requesting data for plate: " << plate << endl;
         this->queueCount++;
         this->queueMutex.unlock();
 

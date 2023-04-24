@@ -70,138 +70,143 @@ def car_plate():
     plate = letters + numbers
     return plate
 
-def main(road, mode):
-    if mode not in {"forward", "backward"}:
-        raise ValueError("mode must be 'forward' or 'backward'")
-    
+def sub(road, mode):
+    # cria a matriz que representa a estrada
+    matrix_cars = np.full((road.size,road.lanes), "XXXXXX")
+
+    cars = road.vehicles
+    cars.sort(key = calc_speed) # ordena os carros por velocidade
+
+    for car in cars:
+        print(car.x)
+        # atualiza o contador de ciclos para remover a colisão
+        if car.collision:
+            car.cicles_to_remove_collision += 1
+            if car.cicles_to_remove_collision == road.cicles_to_remove_collision:
+                print("Removed", car.plate)
+                cars.remove(car)
+                continue
+
+        trigger_collision = False
+
+        for i in range(car.speed):
+            # checa se há carros no meio do avanço do carro
+            achieved_speed = i
+            if matrix_cars[car.x + i][car.y] != "XXXXXX":
+                trigger_collision = True
+                collision_pos = car.x + i
+                plate_colided = matrix_cars[car.x + i][car.y]
+                break
+
+        # forçar colisão se a probabilidade de colisão for maior que o random
+        if random.random() < road.collision_risk and trigger_collision:
+            car.x = collision_pos
+            car.collision = True
+            # define que o carro em que ele bateu também colidiu
+            for car_2 in cars:
+                if car_2.plate == plate_colided:
+                    car_2.collision = True
+
+        # se nao houver, só atualiza a posicao do carro
+        if not trigger_collision:
+            matrix_cars[car.x + car.speed][car.y] = car.plate
+            car.x += car.speed
+
+        # checa a possibilidade de o carro trocar de pista
+        # adicionamos car.collision == False para evitar que o carro troque de pista se ja colidiu
+        if trigger_collision and car.collision == False:
+            # se conseguiu trocar de pista, nao ha mais risco de colisao
+            if car.y != 0: # para a esquerda
+                if matrix_cars[collision_pos][car.y - 1] != "XXXXXX":
+                    trigger_collision = False
+                    matrix_cars[collision_pos][car.y - 1] = car.plate
+
+            if car.y != road.lanes-1: # para a direita
+                if matrix_cars[collision_pos][car.y + 1] != "XXXXXX": #and trigger_collision:
+                    trigger_collision = False
+                    matrix_cars[collision_pos][car.y + 1] = car.plate
+
+            # se nao conseguiu trocar de pista, diminui a velocidade
+            if trigger_collision:
+                if car.speed - (achieved_speed+1) < road.max_decceleration:
+                    car.speed -= (achieved_speed+1)
+                    matrix_cars[car.x + car.speed][car.y] = car.plate
+                    trigger_collision = False
+
+        # se nao conseguiu trocar de pista ou diminuir a velocidade, colidiu
+        if trigger_collision:
+            car.x = collision_pos
+            car.collision = True
+            print("Colided", car.plate)
+            # define que o carro em que ele bateu também colidiu
+            for car_2 in cars:
+                if car_2.plate == plate_colided:
+                    car_2.collision = True
+
+        if car.collision == True:
+            car.speed = 0
+        else:
+            # define velocidade e aceleração do carro
+            if car.speed == 0:
+                car.speed = road.max_decceleration
+            else:
+                car.speed += car.acceleration
+
+            accel_new = random.randrange(-road.max_acceleration,road.max_acceleration)
+
+            # mantém a velocidade dos carros em movimento acima do limite minimo
+            if car.speed + accel_new < road.min_speed:
+                car.acceleration = road.max_decceleration - 1
+            # ou evita que a velocidade do carro ultrapasse o limite físico do carro
+            elif car.speed + accel_new > road.speed_limit:
+                car.speed = road.speed_limit
+            # ou atualiza a aceleração
+            else:
+                car.acceleration = accel_new
+
+            # tira o carro da pista caso sua posição seja maior que o tamanho da pista
+            if car.x + car.speed > road.size-1:
+                cars.remove(car)
+
+        # checa se o carro vai trocar de pista
+        if road.prob_lane_change > random.random():
+            if car.speed > 0:
+                if car.y != 0 and car.y != road.lanes -1:
+                    car.y = random.choice([car.y+1,car.y-1])
+                elif car.y == 0:
+                    car.y += 1
+                else:
+                    car.y -= 1
+
+    for i in range(road.lanes):
+        if random.random() < road.prob_vehicle_surge:
+            plate = car_plate()
+            # carros entram com uma velocidade entre o mínimo e o máximo da pista
+            car = vehicle(0, i, plate, random.randint(road.min_speed, road.max_speed))
+            cars.append(car)
+    road.vehicles = cars
+
+    # escreve dependendo do sentido da rodovia em questão
+
+
+
+    time.sleep(0.05)
+
+def main(road1,road2):
     # while True:
-    road.vehicles = []
+    road1.vehicles = []
+    road2.vehicles = []
     contador = -1
     while True:
-        contador += 1
-        # cria a matriz que representa a estrada
-        matrix_cars = np.full((road.size,road.lanes), "XXXXXX")
-        
-        cars = road.vehicles
-        cars.sort(key = calc_speed) # ordena os carros por velocidade
-
-        for car in cars:
-            print(car.x)
-            # atualiza o contador de ciclos para remover a colisão
-            if car.collision:
-                car.cicles_to_remove_collision += 1
-                if car.cicles_to_remove_collision == road.cicles_to_remove_collision:
-                    print("Removed", car.plate)
-                    cars.remove(car)
-                    continue
-
-            trigger_collision = False
-
-            for i in range(car.speed):
-                # checa se há carros no meio do avanço do carro
-                achieved_speed = i
-                if matrix_cars[car.x + i][car.y] != "XXXXXX":
-                    trigger_collision = True
-                    collision_pos = car.x + i
-                    plate_colided = matrix_cars[car.x + i][car.y]
-                    break
-            
-            # forçar colisão se a probabilidade de colisão for maior que o random
-            if random.random() < road.collision_risk and trigger_collision:
-                car.x = collision_pos
-                car.collision = True
-                # define que o carro em que ele bateu também colidiu
-                for car_2 in cars:
-                    if car_2.plate == plate_colided:
-                        car_2.collision = True
-
-            # se nao houver, só atualiza a posicao do carro
-            if not trigger_collision:
-                matrix_cars[car.x + car.speed][car.y] = car.plate
-                car.x += car.speed
-            
-            # checa a possibilidade de o carro trocar de pista
-            # adicionamos car.collision == False para evitar que o carro troque de pista se ja colidiu
-            if trigger_collision and car.collision == False:
-                # se conseguiu trocar de pista, nao ha mais risco de colisao
-                if car.y != 0: # para a esquerda
-                    if matrix_cars[collision_pos][car.y - 1] != "XXXXXX":
-                        trigger_collision = False
-                        matrix_cars[collision_pos][car.y - 1] = car.plate
-                
-                if car.y != road.lanes-1: # para a direita
-                    if matrix_cars[collision_pos][car.y + 1] != "XXXXXX": #and trigger_collision:
-                        trigger_collision = False
-                        matrix_cars[collision_pos][car.y + 1] = car.plate
-                        
-                # se nao conseguiu trocar de pista, diminui a velocidade
-                if trigger_collision:
-                    if car.speed - (achieved_speed+1) < road.max_decceleration:
-                        car.speed -= (achieved_speed+1)
-                        matrix_cars[car.x + car.speed][car.y] = car.plate
-                        trigger_collision = False
-
-            # se nao conseguiu trocar de pista ou diminuir a velocidade, colidiu
-            if trigger_collision:
-                car.x = collision_pos
-                car.collision = True
-                print("Colided", car.plate)
-                # define que o carro em que ele bateu também colidiu
-                for car_2 in cars:
-                    if car_2.plate == plate_colided:
-                        car_2.collision = True  
-
-            if car.collision == True:
-                car.speed = 0
-            else:    
-                # define velocidade e aceleração do carro
-                if car.speed == 0:
-                    car.speed = road.max_decceleration
-                else:
-                    car.speed += car.acceleration
-                    
-                accel_new = random.randrange(-road.max_acceleration,road.max_acceleration)
-
-                # mantém a velocidade dos carros em movimento acima do limite minimo
-                if car.speed + accel_new < road.min_speed:
-                    car.acceleration = road.max_decceleration - 1
-                # ou evita que a velocidade do carro ultrapasse o limite físico do carro
-                elif car.speed + accel_new > road.speed_limit:
-                    car.speed = road.speed_limit
-                # ou atualiza a aceleração 
-                else:
-                    car.acceleration = accel_new
-
-                # tira o carro da pista caso sua posição seja maior que o tamanho da pista
-                if car.x + car.speed > road.size-1:
-                    cars.remove(car)
-                
-            # checa se o carro vai trocar de pista
-            if road.prob_lane_change > random.random():
-                if car.speed > 0:
-                    if car.y != 0 and car.y != road.lanes -1:
-                        car.y = random.choice([car.y+1,car.y-1])
-                    elif car.y == 0:
-                        car.y += 1
-                    else:
-                        car.y -= 1
-
-        for i in range(road.lanes):
-            if random.random() < road.prob_vehicle_surge:
-                plate = car_plate()
-                # carros entram com uma velocidade entre o mínimo e o máximo da pista
-                car = vehicle(0, i, plate, random.randint(road.min_speed, road.max_speed))
-                cars.append(car)
-        road.vehicles = cars
-
-        # escreve dependendo do sentido da rodovia em questão
         tempo = int(1000*time.time())
         tempo = str(tempo)[-9:]
-
-        write_to_file(road.name, road.max_speed, road.vehicles, tempo, mode, road.lanes, road.size)
-        time.sleep(0.05)
+        sub(road1, "forward")
+        write_to_file(road1.name, road1.max_speed, road1.vehicles, tempo, "forward", road1.lanes, road1.size)
+        sub(road2, "backward")
+        write_to_file(road2.name, road2.max_speed, road2.vehicles, tempo, "backward", road2.lanes, road2.size)
 
 var = input("Digite o nome do arquivo: ")
 
-av_brasil = road(var, 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2)
-main(av_brasil, "forward")
+rod_ida = road(var, 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2)
+rod_volta = road(var, 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2)
+main(rod_ida, rod_volta)
