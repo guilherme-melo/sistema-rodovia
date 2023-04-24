@@ -34,13 +34,15 @@ Cada instância do *mock* é uma rodovia, de modo que o usuário pode personaliz
 
 `max_speed`: velocidade máxima legal da rodovia
 
-`min_speed`: velocidade mínima legal da rodovia
+`min_speed`: velocidade mínima legal da rodovia e mínima física do veículo
 
 `collision_risk`: probabilidade de um veículo colidir
 
 `max_acceleration`: aceleração máxima de um veículo na rodovia
 
 `max_decceleration`: desaceleração máxima de um veículo na rodovia
+
+`speed_limit`: limite de velocidade física de um veículo 
 
 Ao executar o arquivo `mock.py`, o usuário precisará definir somente o nome da rodovia e o número de pistas em cada lado da rodovia (isto é, um inteiro par maior que zero). Caso deseje alterar qualquer outro parâmetro, deverá ajustar diretamente o código. Por exemplo:
 
@@ -55,7 +57,8 @@ ponte = road(name = "Ponte Rio-Niteroi",
              min_speed = 60, 
              collision_risk = .2, 
              max_acceleration = 5,
-             max_decceleration = 2)
+             max_decceleration = 2,
+             speed_limit = 200)
 
 main(ponte)
 ```
