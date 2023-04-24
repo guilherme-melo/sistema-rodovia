@@ -71,7 +71,7 @@ Road splitData(string fileName)
 // THREAD 1 ( RODOVIAS) ----------------------------------------------------------------------------------
 
 // Funcao que retorna o nome de todas as pastas (rodovias)
-vector<string> get_roads() 
+vector<string> get_roads()
 {
 
     const char *folder_path = "./data/";
@@ -94,11 +94,6 @@ vector<string> get_roads()
 }
 
 // THREAD 2 (CALCULA VELOCIDADE, ACELERACAO, RISCO DE COLISAO) ----------------------------------------------------------------------------------
-//
-using namespace std;
-
-// Vetor de tuplas (placa, posicao/velocidade/aceleracao) para cada pista
-typedef vector<tuple<string, int>> Lane;
 
 
 // Funcao de calculo de velocidade em uma thread
@@ -113,14 +108,14 @@ void calc_speed_thread(Road positions, Road *old_position, Road *calculated_spee
                 // Calcula a velocidade atual (posicao atual - posicao anterior)
                 int speed = get<1>(positions[i][j]) - get<1>(old_position->at(y_old)[x_old]);
                 speed = abs(speed);
-                // Cria uma tupla (placa, velocidade) e insere no vetor de velocidades calculadas 
+                // Cria uma tupla (placa, velocidade) e insere no vetor de velocidades calculadas
                 tuple<string,int> plate_speed = make_tuple(get<0>(positions[i][j]), speed);
 
                 // Insere a tupla no vetor de velocidades calculadas protegendo por mutex
                 mtx.lock();
                 calculated_speed->at(i).push_back(plate_speed);
                 mtx.unlock();
-            } 
+            }
         }
     }
 }
@@ -146,8 +141,8 @@ Road calc_speed(Road positions, Road* old_position){
     {
         // Para cada carro, cria uma thread para calcular a velocidade usando a funcao calc_speed_thread
         for (int x = 0; x < positions[y].size(); x++)
-        {   
-            
+        {
+
             count++; // contamos o numero de threads (carros)
             threads.push_back(thread(calc_speed_thread, positions, old_position, &calculated_speed, y, x, ref(mtx)));
         }
@@ -176,7 +171,7 @@ void calc_accel_thread(Road speed, Road *old_speeds, Road *calculated_accel, int
             if (get<0>(speed[i][j]) == get<0>(old_speeds->at(y_old)[x_old]))
             {
                 // Calcula a aceleracao (aceleracao atual - antiga)
-                
+
                 int accel = get<1>(speed[i][j]) - get<1>(old_speeds->at(y_old)[x_old]);
                 // Cria uma tupla (placa, aceleracao)
                 tuple<string,int> plate_accel = make_tuple(get<0>(speed[i][j]), accel);
@@ -192,7 +187,7 @@ void calc_accel_thread(Road speed, Road *old_speeds, Road *calculated_accel, int
 
 // Calcula a aceleracao de cada carro dada a velocidade atual e a do ciclo anterior
 // As velocidades anteriores sao passadas por referencia para que possam ser atualizadas
-Road calc_accel(Road speed, Road *old_speeds){
+Road calc_accel(Road speed, Road *old_speeds) {
     Road calculated_accel;
     vector<thread> threads;
     mutex mtx;
@@ -214,7 +209,6 @@ Road calc_accel(Road speed, Road *old_speeds){
             // Contamos o numero de threads (carros)
             count++;
             threads.push_back(thread(calc_accel_thread, speed, old_speeds, &calculated_accel, y, x, ref(mtx)));
-            
         }
     }
 
@@ -233,27 +227,26 @@ Road calc_accel(Road speed, Road *old_speeds){
 
 // Calcula o risco de colisão de cada carro dada a posicao, velocidade e aceleracao calculadas
 // para uma pista
-void calc_collision_risk(Lane positions, Lane speed, Lane accel, Lane* 
-) {
+void calc_collision_risk(Lane* positions, Lane* speed, Lane* accel, Lane* c_risk, mutex &mtx_print){
     Lane collision_risk;
-
+    Lane positions_n = *positions;
     // Ordena os carros por posicao
 
-    sort(positions.begin(), positions.end(), [](const tuple<string, int> &a, const tuple<string, int> &b)
+    sort(positions->begin(), positions->end(), [](const tuple<string, int> &a, const tuple<string, int> &b)
          { return get<1>(a) < get<1>(b); });
 
     // Encontra a velocidade e aceleracao de cada carro
-    for (int i = 0; i < positions.size(); i++)
+    for (int i = 0; i < positions->size(); i++)
     {
-        for (int j = 0; j < speed.size(); j++)
+        for (int j = 0; j < speed->size(); j++)
         {
-            for (int k = 0; k < accel.size(); k++)
+            for (int k = 0; k < accel->size(); k++)
             {
-                if (get<0>(positions[i]) == get<0>(speed[j]) && get<0>(positions[i]) == get<0>(accel[k]))
-                {   
+                if (get<0>(positions->at(i)) == get<0>(speed->at(j)) && get<0>(positions->at(i)) == get<0>(accel->at(k)))
+                {
                     // calcula a nova posicao do carro, mas escreve mantendo a ordem original (da posicao antiga)
-                    int new_pos = get<1>(positions[i]) + get<1>(speed[j]) + get<1>(accel[k]);
-                    positions[i] = make_tuple(get<0>(positions[i]), new_pos);
+                    int new_pos = get<1>(positions->at(i)) + get<1>(speed->at(j)) + get<1>(accel->at(k));
+                    positions_n[i] = make_tuple(get<0>(positions->at(i)), new_pos);
                 }
             }
         }
@@ -263,26 +256,35 @@ void calc_collision_risk(Lane positions, Lane speed, Lane accel, Lane*
     // Checa se algum carro vai colidir com o carro a frente, e marca o risco de colisao
     // Utilizamos 1 caso haja risco de colisao, e 0 caso contrario
     bool previous_collision = false; // Booleano para marcar se o carro anterior ja colidiu
-    for (int i = 0; i < positions.size(); i++)
+    for (int i = 0; i < positions->size(); i++)
     {
-        if (i == positions.size() - 1)
+        if (i == positions->size() - 1)
         {
             break;
         }
 
         // Se houver colisao
-        if (get<1>(positions[i]) >= get<1>(positions[i + 1]))
+        if (get<1>(positions_n[i]) >= get<1>(positions_n[i + 1]))
         {
-
             // Se o carro anterior nao colidiu, marca o risco de colisao para ambos
             if (previous_collision == false)
             {
-                collision_risk.push_back(make_tuple(get<0>(positions[i]), 1));
-                collision_risk.push_back(make_tuple(get<0>(positions[i + 1]), 1));
+                tuple<string,bool> risk_1 = make_tuple(get<0>(positions_n[i]), 1);
+                tuple<string, bool> risk_2 = make_tuple(get<0>(positions_n[i + 1]), 1);
+                collision_risk.push_back(risk_1);
+                collision_risk.push_back(risk_2);
+                mtx_print.lock();
+                cout << get<0>(risk_1) << " --> " << "Possui Risco de Colisão" << endl;
+                cout << get<0>(risk_2) << " --> " << "Possui Risco de Colisão" << endl;
+                mtx_print.unlock();
             }
             else
             { // Se o carro anterior colidiu, marca o risco de colisao apenas para o proximo
-                collision_risk.push_back(make_tuple(get<0>(positions[i + 1]), 1));
+                tuple<string, bool> risk_3 = make_tuple(get<0>(positions_n[i + 1]), 1);
+                collision_risk.push_back(risk_3);
+                mtx_print.lock();
+                cout << get<0>(risk_3) << " --> " << "Possui Risco de Colisão" << endl;
+                mtx_print.unlock();
             }
             previous_collision = true; // atualiza o booleano para marcar que houve colisao
         }
@@ -292,7 +294,7 @@ void calc_collision_risk(Lane positions, Lane speed, Lane accel, Lane*
             // Se o carro anterior nao colidiu, marca o risco de colisao para o atual
             if (previous_collision == false)
             {
-                collision_risk.push_back(make_tuple(get<0>(positions[i]), 0));
+                collision_risk.push_back(make_tuple(get<0>(positions_n[i]), 0));
             }
             // Caso contrario, nao marca o risco de colisao para nenhum
 
@@ -301,6 +303,7 @@ void calc_collision_risk(Lane positions, Lane speed, Lane accel, Lane*
         }
     }
 
+    c_risk = &collision_risk;
     //return collision_risk;
 }
 
@@ -363,37 +366,6 @@ vector<vector<tuple<string,bool>>> cars_above_limit(int limit, Road matrix_speed
     return answer;
 }
 
-void prepare_to_barber(positions_list, Legado legado) {
-    vector<vector<string>> cars_data;
-    for (int i = 0; i < positions_list.size(); i++) {
-        for (int j = 0; j < positions_list[i].size(); j++) {
-            for (int k = 0; k < positions_list[i][j].size(); k++) {
-                vector<string> car_data;
-                //iniciar 3 strings possivelmente
-                cars_data.push_back(car_data);
-                }
-            }
-        }
-
-    vector<thread> t_vec;
-    int recount = 0;
-    mutex m;
-    for (int i = 0; i < positions_list.size(); i++) {
-        for (int j = 0; j < positions_list[i].size(); j++) {
-            for (int k = 0; k < positions_list[i][j].size(); k++) {
-                string plate = get<0>(positions_list[i][j][k]);
-                t_vec.push_back(thread(&Legado::request, ref(legado), plate, ref(cars_data), recount, ref(m)));
-                recount++;
-            }
-        }
-    }
-
-    cout << recount << endl;
-    for (int i = 0; i < t_vec.size(); i++) {
-        t_vec[i].join();
-    }
-}
-
 
 int main() //thread calculations
 {
@@ -409,7 +381,7 @@ int main() //thread calculations
     }
 
     int capacity = 5; // Tamanho da fila do barbeiro
-    Legado legado(capacity); //b
+    Legado legado(capacity);
     // while (true)
     // {
     for (int d = 0; d < 30; d++)
@@ -423,7 +395,7 @@ int main() //thread calculations
 
         // Pegando os dados mais recentes
         for (int roadId = 0; roadId < roads.size()-2; roadId++) {
-            string fileName = "./data/" + roads[roadId] + "/" + to_string(d) + "_" + roads[roadId] + "_120_mockdata.txt";// PEGAR O ARQUIVO MAIS RECENTE
+            string fileName = "./data/" + roads[roadId-2] + "/" + to_string(d) + "_" + roads[roadId] + "_120_mockdata.txt";// PEGAR O ARQUIVO MAIS RECENTE
             Road positions = splitData(fileName);
             positions_list.push_back(positions);
 
@@ -441,7 +413,6 @@ int main() //thread calculations
 
             }
             else if (old_speeds->size() == 0) {
-                cout << "Without history adsada" << endl;
                 Road speeds = calc_speed(positions, old_positions); //1 thread pra calcular pra cada lane -> join
                 speeds_list.push_back(speeds);
                 cout << "Without history data" << endl;
@@ -454,31 +425,19 @@ int main() //thread calculations
                 Road accel = calc_accel(speeds, old_speeds); //1 threads pra calcular pra cada lane -> join
                 accelerations_list.push_back(accel);
                 Road collision_risk;
-
+                vector<thread> thread_vec;
+                mutex mtx_print;
                 for (int i = 0; i < positions.size(); i++)
                 {
                     cout << positions[i].size() << endl;
-                    Lane c_risk = calc_collision_risk(positions[i], speeds[i], accel[i]);
+                    Lane c_risk;
+                    thread_vec.push_back(thread(calc_collision_risk, &positions[i], &speeds[i], &accel[i], &c_risk , ref(mtx_print)));
                     //AQUI ESSAS INFORMAÇÕES JÁ DEVEM SER PRINTADAS NO CONSOLE;
                     collision_risk.push_back(c_risk);
                 }
-                
-
-
 
                 collision_risk_list.push_back(collision_risk);
 
-                cout << "Veículos com risco de colisão" << endl;
-                for (Lane lane : collision_risk) {
-                    for (tuple<string, int> tupla : lane) {
-                        if (get<1>(tupla) == 1) {
-                            cout << "---------------" << endl;
-                            cout << "Placa: " << get<0>(tupla) << endl;
-                            cout << "Risco de colisão" << endl;
-                            cout << "---------------" << endl;
-                        }
-                    }
-                }
                 historySpeedsData[roadId] = speeds;
             }
 
@@ -506,13 +465,46 @@ int main() //thread calculations
             }
         }
 
-
         cout <<"Números de carros na simulação: " << n_carros_simulacao << endl;
         int n_road = roads.size() - 2;
         cout << "Número de rodovias presentes na simulação: " << n_road << endl;
 
+
+        //b
+        vector<vector<string>> cars_data;
+        for (int i = 0; i < positions_list.size(); i++) {
+            for (int j = 0; j < positions_list[i].size(); j++) {
+                for (int k = 0; k < positions_list[i][j].size(); k++) {
+                    vector<string> car_data;
+                    //iniciar 3 strings possivelmente
+                    cars_data.push_back(car_data);
+                }
+            }
+        }
+
+
+        vector<thread> t_vec;
+        int recount = 0;
+        mutex m;
+        for (int i = 0; i < positions_list.size(); i++) {
+            for (int j = 0; j < positions_list[i].size(); j++) {
+                for (int k = 0; k < positions_list[i][j].size(); k++) {
+                    string plate = get<0>(positions_list[i][j][k]);
+                    t_vec.push_back(thread(&Legado::request, ref(legado), plate, ref(cars_data), recount, ref(m)));
+                    recount++;
+                }
+            }
+        }
+        cout << recount << endl;
+        for (int i = 0; i < t_vec.size() ; i++) {
+            t_vec[i].join();
+        }
+        
         //b
 
+        // BArbeiro
+        //vector<vector<string>> cars_data;
+        //prepare_to_barber(&positions_list, &legado, &cars_data);
 
         cout << "------------------" << endl;
         int count_cars = 0;
