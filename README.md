@@ -47,7 +47,7 @@ Ao executar o arquivo `mock.py`, o usuário precisará definir somente o nome da
 ```
 ponte = road(name = "Ponte Rio-Niteroi", 
              lanes = 4, 
-             size = 40000, 
+             size = 150000, 
              circles_to_remove_collision = 5, 
              prob_vehicle_surge = .5, 
              prob_lane_change = .1, 
