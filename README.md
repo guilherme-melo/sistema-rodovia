@@ -14,7 +14,7 @@ E em seguida:
 Linux:
 ```./main```
 
-No arquivo `main.cpp`, é possível personalizar o tamanho da fila do barbeiro alterando a variável `capacity` na linha _.
+No arquivo `main.cpp`, é possível personalizar o tamanho da fila do barbeiro alterando a variável `capacity` na linha 17.
 
 ## Personalização das rodovias
 
@@ -54,9 +54,14 @@ ponte = road(name = "Ponte Rio-Niteroi",
              max_speed = 120, 
              min_speed = 60, 
              collision_risk = .2, 
-             max_acceleration = 5, 
+             max_acceleration = 5,
              max_decceleration = 2)
 
 main(ponte)
 ```
 
+Caso a execução retorne uma `Segmentation fault`, altere a linha 47 para:
+
+`string roadPath = "./data/" + roads_new[roadId] + "/";`
+
+ Isso acontece devido às diferenças entre os sistemas operacionais:
