@@ -32,7 +32,7 @@ int main() //thread calculations
             }
             old_roads_size = roads_new.size();
         }
-        cout << "ATUALIZAÇÃO DASHBOARD" << endl;
+        cout << "-----------HEADER-----------" << endl;
         vector<Road> positions_list;
         vector<Road> speeds_list;
         vector<Road> accelerations_list;
@@ -59,8 +59,6 @@ int main() //thread calculations
             //string fileName = getMostRecentData("./data/" + roads[roadId]);
             thread t(deleteAllFiles, roadPath);
             t.detach();
-            //string fileName = "./data/" + roads[roadId+2] + "/" + to_string(d) + "_" + roads[roadId+2] + "_120_mockdata.txt";// PEGAR O ARQUIVO MAIS RECENTE
-
             positions_list.push_back(positions);
 
             Road* old_positions = &historyPositionsData[roadId];
@@ -190,7 +188,7 @@ int main() //thread calculations
 
                     cout << "---------------" << endl;
                     cout << "Placa: " << get<0>(positions_list[road][lane][car]) << endl;
-                    cout << "Posição: " << get<1>(positions_list[road][lane][car]) << endl;
+                    cout << "Posição: " << get<1>(positions_list[road][lane][car]) << " , " << lane << endl;
 
                     bool speed_found = false;
                     for (int road_speed = 0; road_speed < speeds_list.size(); road_speed++) {
