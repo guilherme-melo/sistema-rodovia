@@ -42,7 +42,7 @@ Cada instância do *mock* é uma rodovia, de modo que o usuário pode personaliz
 
 `max_decceleration`: desaceleração máxima de um veículo na rodovia
 
-Ao executar o `mock.py` no terminal, o usuário precisará definir somente o nome da rodovia e o número de pistas em cada lado da rodovia (isto é, um inteiro par maior que zero). Caso deseje alterar qualquer outro parâmetro, deverá ajustar diretamente o código. Por exemplo:
+Ao executar o arquivo `mock.py`, o usuário precisará definir somente o nome da rodovia e o número de pistas em cada lado da rodovia (isto é, um inteiro par maior que zero). Caso deseje alterar qualquer outro parâmetro, deverá ajustar diretamente o código. Por exemplo:
 
 ```
 ponte = road(name = "Ponte Rio-Niteroi", 
