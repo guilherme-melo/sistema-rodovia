@@ -315,11 +315,9 @@ void calc_collision_risk(Lane* positions, Lane* speed, Lane* accel, Road* c_risk
 // Funcao que checa o limite de velocidade de cada pista e adiciona os limites a um vetor
 void speed_limits(vector<string> folders, vector<int> *s_limits) {
     // Passa pelo vetor de pastas e pega o limite de velocidade de cada uma
-    for (int i = s_limits->size(); i < folders.size(); i++) {
-        if (folders[i] == "." || folders[i] == "..") {
-            continue;
-        }
+    for (int i = s_limits->size() + 2 ; i < folders.size(); i++) {
         size_t start = folders[i].find('_');
+        cout << folders[i] << endl;
         int speed =  stoi(folders[i].substr(start+1, folders[i].size()));
         s_limits->push_back(speed);
     }

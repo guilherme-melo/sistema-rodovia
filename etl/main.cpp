@@ -48,8 +48,9 @@ int main() //thread calculations
             posicaoInicial = roadPath.size();
             cout << roadPath << endl;
             fileName = getMostRecentFile(roadPath,ref(iter));
+            cout << "FILE:"<< fileName << endl;
             if (fileName == "." || fileName == "..") {
-                cout << "No file found" << endl;
+                cout << "No file found A" << endl;
                 fileName = "";
                 continue;
             }
