@@ -7,7 +7,7 @@ int main() //thread calculations
     vector<Road> historySpeedsData;
     vector<string> roads = get_roads();
     int old_roads_size = roads.size();
-    for (int roadId = 0; roadId < roads.size()-2; roadId++) {
+    for (int roadId = 0; roadId < roads.size(); roadId++) {
         Road temp;
         historyPositionsData.push_back(temp);
         historySpeedsData.push_back(temp);
@@ -42,18 +42,13 @@ int main() //thread calculations
         int iter = 0;
         int posicaoInicial;
         string fileName;
-        for (int roadId = 0; roadId < roads_new.size()-2; roadId++) {
+        for (int roadId = 0; roadId < roads_new.size(); roadId++) {
             //WINDOWS systems:
-            string roadPath = "./data/" + roads_new[roadId+2] + "/";
-            posicaoInicial = roadPath.size();
+            string roadPath = "./data/" + roads_new[roadId] + "/";
             cout << roadPath << endl;
+            posicaoInicial = roadPath.size();
             fileName = getMostRecentFile(roadPath,ref(iter));
-            cout << "FILE:"<< fileName << endl;
-            if (fileName == "." || fileName == "..") {
-                cout << "No file found A" << endl;
-                fileName = "";
-                continue;
-            }
+
             if (fileName == "") {
                 cout << "No file found" << endl;
                 continue;
@@ -63,8 +58,7 @@ int main() //thread calculations
 
             //UNIX systems:
             //string fileName = getMostRecentData("./data/" + roads[roadId]);
-            thread t(deleteAllFiles, roadPath);
-            t.detach();
+            deleteAllFiles(roadPath);
             positions_list.push_back(positions);
 
             Road* old_positions = &historyPositionsData[roadId];
@@ -116,6 +110,8 @@ int main() //thread calculations
 
             //Atualizar historyData ao fim do loop
             historyPositionsData[roadId] = positions;
+
+
         }
 
         //Inicialização do vetor que vai receber o resultado do barbeiro
@@ -130,6 +126,7 @@ int main() //thread calculations
             }
         }
 
+
         // Análise do barbeiro (em threads)
         vector<thread> t_vec;
         int recount = 0;
@@ -143,6 +140,7 @@ int main() //thread calculations
                 }
             }
         }
+
 
         //Análise do número de carros
         int n_carros_simulacao = 0;
@@ -171,7 +169,7 @@ int main() //thread calculations
             }
         }
         cout <<"Número de carros na simulação: " << n_carros_simulacao << endl;
-        int n_road = roads_new.size() - 2;
+        int n_road = roads_new.size();
         cout << "Número de rodovias presentes na simulação: " << n_road << endl;
 
         //Joins das threads do barbeiro

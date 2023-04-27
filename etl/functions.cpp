@@ -88,9 +88,9 @@ vector<string> get_roads()
 
     while ((entry = readdir(dirp)) != NULL)
     {
-        if (entry->d_type == DT_DIR)
+        if (entry->d_type == DT_DIR && string(entry->d_name) != "." && string(entry->d_name) != "..")
         {
-            folders.push_back(entry->d_name);
+            folders.push_back(string(entry->d_name));
         }
     }
 
@@ -315,7 +315,7 @@ void calc_collision_risk(Lane* positions, Lane* speed, Lane* accel, Road* c_risk
 // Funcao que checa o limite de velocidade de cada pista e adiciona os limites a um vetor
 void speed_limits(vector<string> folders, vector<int> *s_limits) {
     // Passa pelo vetor de pastas e pega o limite de velocidade de cada uma
-    for (int i = s_limits->size() + 2 ; i < folders.size(); i++) {
+    for (int i = s_limits->size(); i < folders.size(); i++) {
         size_t start = folders[i].find('_');
         cout << folders[i] << endl;
         int speed =  stoi(folders[i].substr(start+1, folders[i].size()));
@@ -418,7 +418,6 @@ void deleteAllFiles (const string &dirName) {
     while ((ent = readdir(dir)) != nullptr) {
         std::string filename = ent->d_name;
         std::string filepath = dirName + filename;
-
         // Ignora . e .. 
         if (filename == "." || filename == "..") {
             continue;
@@ -426,8 +425,6 @@ void deleteAllFiles (const string &dirName) {
 
         // Delete the file
         if (remove(filepath.c_str()) != 0) {
-            continue;
-        } else {
             continue;
         }
     }
@@ -441,7 +438,7 @@ string getMostRecentFile(const string& folderPath,int& iter) {
     while ((dp = readdir(dirp)) != NULL) {
         iter++;
         struct stat fileStat;
-        std::string filePath = folderPath + "/" + dp->d_name;
+        std::string filePath = folderPath + dp->d_name;
         if (stat(filePath.c_str(), &fileStat) == 0 && S_ISREG(fileStat.st_mode)) {
             if (fileStat.st_mtime > latestTime) {
                 time_t l_time = fileStat.st_mtime;
