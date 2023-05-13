@@ -4,6 +4,7 @@ import string
 import os
 #sleep import
 import time
+import multiprocessing as mp
     
 class vehicle:
     def __init__(self, x, y, plate, speed):
@@ -192,21 +193,28 @@ def sub(road, mode):
 
     time.sleep(0.05)
 
-def main(road1,road2):
-    # while True:
-    road1.vehicles = []
-    road2.vehicles = []
-    contador = -1
+def simulate_road(road_fwd,road_bwd):
     while True:
         tempo = int(1000*time.time())
         tempo = str(tempo)[-9:]
-        sub(road1, "forward")
-        write_to_file(road1.name, road1.max_speed, road1.vehicles, tempo, "forward", road1.lanes, road1.size)
-        sub(road2, "backward")
-        write_to_file(road2.name, road2.max_speed, road2.vehicles, tempo, "backward", road2.lanes, road2.size)
+        sub(road_fwd, "forward")
+        write_to_file(road_fwd.name, road_fwd.max_speed, road_fwd.vehicles, tempo, "forward", road_fwd.lanes, road_fwd.size)
+        sub(road_bwd, "backward")
+        write_to_file(road_bwd.name, road_bwd.max_speed, road_bwd.vehicles, tempo, "backward", road_bwd.lanes, road_bwd.size)
 
-var = input("Digite o nome do arquivo: ")
+# função principal que cria as rodovias e as processa em paralelo
+def main(num_instances):
+    processes = []
+    for i in range(num_instances):
+        road_fwd = road("road" + str(i), 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
+        road_bwd = road("road" + str(i), 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
+        process = mp.Process(target=simulate_road, args=(road_fwd,road_bwd))
+        processes.append(process)
+        process.start()
+    for process in processes:
+        process.join()
 
-rod_ida = road(var, 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
-rod_volta = road(var, 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
-main(rod_ida, rod_volta)
+num_instances = 50 # numero de rodovias a serem simuladas
+
+if __name__ == "__main__":
+    main(num_instances)
