@@ -4,10 +4,10 @@ Essa é uma aplicação que produz análises a partir de dados de tráfego simul
 
 ## Execução o ETL
 
-Para compilar o ETL, entre na raiz do projeto e execute no terminal:
+Para compilar o ETL, entre na raiz do projeto, crie uma pasta `data` vazia e execute no terminal:
 
 Linux:
-```g++ -pthread -o main etl/main.cpp ```
+```g++ -pthread -o main etl/main.cpp```
 
 E em seguida:
 
@@ -62,9 +62,3 @@ ponte = road(name = "Ponte Rio-Niteroi",
 
 main(ponte)
 ```
-
-Caso a execução retorne uma `Segmentation fault`, altere a linha 47 para:
-
-`string roadPath = "./data/" + roads_new[roadId] + "/";`
-
- Isso acontece devido às diferenças entre os sistemas operacionais:
