@@ -237,6 +237,6 @@ def main(num_instances):
         p.join()
 
 if __name__ == '__main__':
-    #signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGINT, signal_handler)
     num_instances = int(input("Enter the number of instances: "))
     main(num_instances)
