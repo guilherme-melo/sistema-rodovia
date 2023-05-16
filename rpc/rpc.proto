@@ -2,7 +2,6 @@ syntax = 'proto3';
 
 package roadsim;
 
-// lets create functions for the road service
 service RoadSim {
   rpc Simulate (Request) returns (Response);
 };

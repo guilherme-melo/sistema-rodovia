@@ -6,6 +6,7 @@ import os
 import time
 import multiprocessing as mp
 import json
+import pickle
 
 class vehicle:
     def __init__(self, x, y, plate, speed):
@@ -207,10 +208,7 @@ def sub(road, mode):
 
     time.sleep(0.05)
 
-json_string = ""
-
 def main(road_fwd,road_bwd):
-    global json_string
     # while True:
     road_fwd.vehicles = []
     road_bwd.vehicles = []
@@ -223,8 +221,11 @@ def main(road_fwd,road_bwd):
         sub(road_bwd, "backward")
         stringBackward = write_to_string(road_bwd.name, road_bwd.max_speed, road_bwd.vehicles, tempo, "backward", road_bwd.lanes, road_bwd.size)
         stringForward['cars'].update(stringBackward['cars'])
-        json_string = str(json.dumps(stringForward))
+        json_string = json.dumps(stringForward)
+        pickle.dump(json_string, open("json_string.p", "wb"))
+
 
 rod_ida = road('var', 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
 rod_volta = road('var', 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
 main(rod_ida, rod_volta)
+
