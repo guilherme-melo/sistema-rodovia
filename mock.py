@@ -5,7 +5,8 @@ import os
 #sleep import
 import time
 import multiprocessing as mp
-    
+import json
+
 class vehicle:
     def __init__(self, x, y, plate, speed):
         self.x = x
@@ -60,6 +61,19 @@ def write_to_file(name, max_speed, list_cars, timestamp, mode, lanes, size):
     f.write(str_file)
     f.close()
 
+def write_to_string(name, max_speed, list_cars, timestamp, mode, lanes, size):
+    road_info = {}
+    road_info["time"] = timestamp
+    road_info["avenue"] = name + "_" + str(max_speed)
+    road_info["cars"] = {}
+
+    for car in list_cars:
+        if mode == "forward":
+            road_info["cars"][car.plate] = "(" + str(car.x) + "," + str(car.y) + ")"
+        elif mode == "backward":
+            road_info["cars"][car.plate] = "(" + str(size - car.x) + "," + str(lanes + car.y) + ")"
+
+    return road_info
 
 def calc_speed(car):
     return car.speed
@@ -193,28 +207,24 @@ def sub(road, mode):
 
     time.sleep(0.05)
 
-def simulate_road(road_fwd,road_bwd):
+json_string = ""
+
+def main(road_fwd,road_bwd):
+    global json_string
+    # while True:
+    road_fwd.vehicles = []
+    road_bwd.vehicles = []
+    
     while True:
         tempo = int(1000*time.time())
         tempo = str(tempo)[-9:]
         sub(road_fwd, "forward")
-        write_to_file(road_fwd.name, road_fwd.max_speed, road_fwd.vehicles, tempo, "forward", road_fwd.lanes, road_fwd.size)
+        stringForward = write_to_string(road_fwd.name, road_fwd.max_speed, road_fwd.vehicles, tempo, "forward", road_fwd.lanes, road_fwd.size)
         sub(road_bwd, "backward")
-        write_to_file(road_bwd.name, road_bwd.max_speed, road_bwd.vehicles, tempo, "backward", road_bwd.lanes, road_bwd.size)
+        stringBackward = write_to_string(road_bwd.name, road_bwd.max_speed, road_bwd.vehicles, tempo, "backward", road_bwd.lanes, road_bwd.size)
+        stringForward['cars'].update(stringBackward['cars'])
+        json_string = str(json.dumps(stringForward))
 
-# função principal que cria as rodovias e as processa em paralelo
-def main(num_instances):
-    processes = []
-    for i in range(num_instances):
-        road_fwd = road("road" + str(i), 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
-        road_bwd = road("road" + str(i), 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
-        process = mp.Process(target=simulate_road, args=(road_fwd,road_bwd))
-        processes.append(process)
-        process.start()
-    for process in processes:
-        process.join()
-
-num_instances = 50 # numero de rodovias a serem simuladas
-
-if __name__ == "__main__":
-    main(num_instances)
+rod_ida = road('var', 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
+rod_volta = road('var', 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
+main(rod_ida, rod_volta)
