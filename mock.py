@@ -208,11 +208,7 @@ def sub(road, mode):
 
     time.sleep(0.05)
 
-def main(road_fwd,road_bwd):
-    # while True:
-    road_fwd.vehicles = []
-    road_bwd.vehicles = []
-    
+def simulate_road(road_fwd, road_bwd):
     while True:
         tempo = int(1000*time.time())
         tempo = str(tempo)[-9:]
@@ -224,8 +220,21 @@ def main(road_fwd,road_bwd):
         json_string = json.dumps(stringForward)
         pickle.dump(json_string, open("json_string.p", "wb"))
 
+def main(num_instances):
+    processes = []
+    
+    for i in range(num_instances):
+        road_fwd = road("road" + str(i), 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
+        road_bwd = road("road" + str(i), 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
+        p = mp.Process(target=simulate_road, args=(road_fwd, road_bwd))
+        p.start()
+        processes.append(p)
+    
+    for p in processes:
+        p.join()
 
-rod_ida = road('var', 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
-rod_volta = road('var', 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
-main(rod_ida, rod_volta)
+num_instances = 50
+
+if __name__ == '__main__':
+    main(num_instances)
 
