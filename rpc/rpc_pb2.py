@@ -13,17 +13,17 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\trpc.proto\x12\nhelloworld\"\x1c\n\x0cHelloRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x1d\n\nHelloReply\x12\x0f\n\x07message\x18\x01 \x01(\t2I\n\x07Greeter\x12>\n\x08SayHello\x12\x18.helloworld.HelloRequest\x1a\x16.helloworld.HelloReply\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\trpc.proto\x12\x07roadsim\"\x17\n\x07Request\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x1b\n\x08Response\x12\x0f\n\x07message\x18\x01 \x01(\t2:\n\x07RoadSim\x12/\n\x08Simulate\x12\x10.roadsim.Request\x1a\x11.roadsim.Responseb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'rpc_pb2', globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _HELLOREQUEST._serialized_start=25
-  _HELLOREQUEST._serialized_end=53
-  _HELLOREPLY._serialized_start=55
-  _HELLOREPLY._serialized_end=84
-  _GREETER._serialized_start=86
-  _GREETER._serialized_end=159
+  _REQUEST._serialized_start=22
+  _REQUEST._serialized_end=45
+  _RESPONSE._serialized_start=47
+  _RESPONSE._serialized_end=74
+  _ROADSIM._serialized_start=76
+  _ROADSIM._serialized_end=134
 # @@protoc_insertion_point(module_scope)

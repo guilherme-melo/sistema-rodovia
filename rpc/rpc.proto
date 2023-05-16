@@ -1,18 +1,17 @@
 syntax = 'proto3';
 
-package helloworld;
+package roadsim;
 
-service Greeter {
-  // Sends a greeting
-  rpc SayHello (HelloRequest) returns (HelloReply) {}
+// lets create functions for the road service
+service RoadSim {
+  rpc Simulate (Request) returns (Response);
 };
 
-// The request message containing the user's name.
-message HelloRequest {
+message Request {
   string name = 1;
 };
 
-// The response message containing the greetings
-message HelloReply {
+message Response {
   string message = 1;
 };
+
