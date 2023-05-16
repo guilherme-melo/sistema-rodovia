@@ -1,12 +1,15 @@
 import random
 import numpy as np
 import string
-import os
-#sleep import
 import time
 import multiprocessing as mp
 import json
-import pickle
+#import pickle
+import grpc
+import rpc_pb2
+import rpc_pb2_grpc
+import signal
+import sys
 
 class vehicle:
     def __init__(self, x, y, plate, speed):
@@ -38,29 +41,6 @@ class road:
 
         self.vehicles = []
         self.vehicles_to_remove = False
-
-# cria arquivo de texto com os dados
-def write_to_file(name, max_speed, list_cars, timestamp, mode, lanes, size):
-    
-    id_file = "data/" + name  + "_" + str(max_speed) + "/" + timestamp + "_mockdata.txt"
-    str_file = ""
-
-    id_folder = os.path.dirname(id_file)
-    if not os.path.exists(id_folder):
-        os.makedirs(id_folder)
-
-    for car in list_cars:
-        if mode == "forward":
-            str_file += (car.plate + " " + "(" + str(car.x) + "," + str(car.y) + ")" + "\n")
-        elif mode == "backward":
-            str_file += (car.plate + " " + "(" + str(size - car.x) + "," + str(lanes + car.y) + ")" + "\n")
-
-    if mode == "forward": # apaga o arquivo e sobrescreve
-        f = open(id_file, "w")
-    elif mode == "backward": # adiciona ao final do arquivo
-        f = open(id_file, "a")
-    f.write(str_file)
-    f.close()
 
 def write_to_string(name, max_speed, list_cars, timestamp, mode, lanes, size):
     road_info = {}
@@ -202,13 +182,20 @@ def sub(road, mode):
             cars.append(car)
     road.vehicles = cars
 
-    # escreve dependendo do sentido da rodovia em questão
-
-
-
     time.sleep(0.05)
 
+def signal_handler(signal, frame):
+    print("Keyboard interrupt received. Terminating all processes...")
+    for p in processes:
+        p.terminate()
+    sys.exit(0)
+
 def simulate_road(road_fwd, road_bwd):
+    channel = grpc.insecure_channel("localhost:50051")
+    stub = rpc_pb2_grpc.RoadSimStub(channel)
+    
+    last_request_name = None 
+    
     while True:
         tempo = int(1000*time.time())
         tempo = str(tempo)[-9:]
@@ -218,9 +205,25 @@ def simulate_road(road_fwd, road_bwd):
         stringBackward = write_to_string(road_bwd.name, road_bwd.max_speed, road_bwd.vehicles, tempo, "backward", road_bwd.lanes, road_bwd.size)
         stringForward['cars'].update(stringBackward['cars'])
         json_string = json.dumps(stringForward)
-        pickle.dump(json_string, open("json_string.p", "wb"))
+        #pickle.dump(json_string, open("json_string.p", "wb"))
+
+        try:
+            # change to ..\json_string.p if your o.s. is Windows
+            # ../json_string.p if your o.s. is Linux or Mac
+            request = rpc_pb2.Request(name=json_string)
+            request_name = request.name
+
+            # checks if the last message is different from the current one
+            if request_name != last_request_name:
+                # sends the message to the server if it is different
+                response = stub.Simulate(request)
+                last_request_name = request_name
+        except:
+            continue
+
 
 def main(num_instances):
+    global processes
     processes = []
     
     for i in range(num_instances):
@@ -233,8 +236,7 @@ def main(num_instances):
     for p in processes:
         p.join()
 
-num_instances = 50
-
 if __name__ == '__main__':
+    #signal.signal(signal.SIGINT, signal_handler)
+    num_instances = int(input("Enter the number of instances: "))
     main(num_instances)
-
