@@ -8,7 +8,7 @@ class RoadSimServicer(rpc_pb2_grpc.RoadSimServicer):
     def Simulate(self, request, context):
         response = rpc_pb2.Response()
         response.message = f"{request.name}"
-        print(response.message)
+        print(response.message, '\n')
         return response
 
 def serve():
