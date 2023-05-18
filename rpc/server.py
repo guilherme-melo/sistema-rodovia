@@ -9,7 +9,15 @@ SERVER_URL = 'mongodb://localhost:27017'
 DB_NAME = 'etl'
 
 client = MongoClient(SERVER_URL)
-db = client[DB_NAME]
+
+dblist = client.list_database_names()
+if DB_NAME in dblist:
+    print("Updating", DB_NAME, "...")
+    db = client[DB_NAME]
+else:
+    print("Creating", DB_NAME, "...")
+    db = client[DB_NAME]
+dblist = client.list_database_names()
 
 class RoadSimServicer(rpc_pb2_grpc.RoadSimServicer):
     def Simulate(self, request, context):

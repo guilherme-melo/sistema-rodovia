@@ -11,6 +11,8 @@ import rpc_pb2_grpc
 import signal
 import sys
 
+# carol 192.168.137.1
+# cris 10.42.0.1
 SERVER_IP = 'localhost'
 SERVER_PORT = '50051'
 
