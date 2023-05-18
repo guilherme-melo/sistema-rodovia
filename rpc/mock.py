@@ -11,6 +11,9 @@ import rpc_pb2_grpc
 import signal
 import sys
 
+SERVER_IP = 'localhost'
+SERVER_PORT = '50051'
+
 class vehicle:
     def __init__(self, x, y, plate, speed):
         self.x = x
@@ -191,7 +194,7 @@ def signal_handler(signal, frame):
     sys.exit(0)
 
 def simulate_road(road_fwd, road_bwd):
-    channel = grpc.insecure_channel("localhost:50051")
+    channel = grpc.insecure_channel(SERVER_IP + ':' + SERVER_PORT)
     stub = rpc_pb2_grpc.RoadSimStub(channel)
     
     last_request_name = None 
