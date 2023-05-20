@@ -41,6 +41,7 @@ int main() //thread calculations
         // Pegando os dados mais recentes
         int iter = 0;
         int posicaoInicial;
+        int time;
         string file;
         for (int roadId = 0; roadId < roads_new.size(); roadId++) {
             file = getMostRecentFile(roads_new[roadId],ref(iter));
@@ -54,6 +55,8 @@ int main() //thread calculations
                 cout << "No car data found" << endl;
                 continue;
             }
+
+            time = stoi(extractTime(file));
 
             Road positions = splitData(cars);
 
@@ -256,6 +259,7 @@ int main() //thread calculations
             long long mil_sec = ms.count();
             //cout << "Tempo de análise: " << mil_sec << endl;
             mil_sec = mil_sec % 1000000000;
+            cout << "Tempo de análise: " << mil_sec - time << "ms" << endl;
             //cout << "Tempo de análise: " << mil_sec << endl;
             // if (fileName == "") {
             //     cout << "Tempo de análise: não há arquivo de entrada" << endl;

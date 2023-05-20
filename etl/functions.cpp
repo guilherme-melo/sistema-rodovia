@@ -56,13 +56,12 @@ std::string extractTime(const std::string& jsonString) {
     string PROPERTY = "time";
     std::size_t timeStartPos = jsonString.find(PROPERTY);
 
-    std::size_t openingQuotePos = jsonString.find('"', timeStartPos);
+    std::size_t openingQuotePos = jsonString.find('"', timeStartPos+PROPERTY.length()+1);
 
-    std::size_t closingQuotePos = jsonString.find('"', timeStartPos+4);
+    std::size_t closingQuotePos = jsonString.find('"', openingQuotePos+1);
 
     std::string timeObject = jsonString.substr(openingQuotePos + 1, closingQuotePos - openingQuotePos - 1 );
     
-    cout:: timeObject << endl;
     return timeObject;
 }
 
