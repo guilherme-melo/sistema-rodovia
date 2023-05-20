@@ -41,28 +41,29 @@ int main() //thread calculations
         // Pegando os dados mais recentes
         int iter = 0;
         int posicaoInicial;
-        string fileName;
+        string file;
         for (int roadId = 0; roadId < roads_new.size(); roadId++) {
-            //WINDOWS systems:
-            string roadPath = "./data/" + roads_new[roadId] + "/";
-            cout << roadPath << endl;
-            posicaoInicial = roadPath.size();
-            fileName = getMostRecentFile(roadPath,ref(iter));
-
-            if (fileName == "") {
+            file = getMostRecentFile(roads[roadId],ref(iter));
+            if (file == "") {
                 cout << "No file found" << endl;
                 continue;
             }
 
-            Road positions = splitData(fileName);
+            string cars = extractCarsValue(file);
+            if (cars == "") {
+                cout << "No car data found" << endl;
+                continue;
+            }
 
-            //UNIX systems:
-            //string fileName = getMostRecentData("./data/" + roads[roadId]);
-            deleteAllFiles(roadPath);
+            Road positions = splitData(cars);
+
+            thread deleteDocs(deleteAllDocuments(), &roads[roadId]);
             positions_list.push_back(positions);
+
 
             Road* old_positions = &historyPositionsData[roadId];
             Road* old_speeds = &historySpeedsData[roadId];
+
 
             // Iniciando análises -------------------------
             // Aqui teremos velocidade, aceleração, risco de colisão pra cada veiculo
@@ -75,6 +76,7 @@ int main() //thread calculations
 
             }
             else if (old_speeds->size() == 0) {
+
                 Road speeds = calc_speed(positions, old_positions,iter); // thread pra calcular pra cada lane -> join
                 speeds_list.push_back(speeds);
                 cout << "Without history data" << endl;
@@ -92,7 +94,6 @@ int main() //thread calculations
                 mutex mtx_risk;
                 for (int i = 0; i < positions.size(); i++)
                 {
-                    cout << positions[i].size() << endl;
                     Lane c_risk;
                     thread_vec.push_back(thread(calc_collision_risk, &positions[i], &speeds[i], &accel[i], &collision_risk , ref(mtx_print), ref(mtx_risk)));
                     // Pela prioridade, essas informacoes devem ser printadas no console;
@@ -111,7 +112,7 @@ int main() //thread calculations
             //Atualizar historyData ao fim do loop
             historyPositionsData[roadId] = positions;
 
-
+            deleteDocs.join();
         }
 
         //Inicialização do vetor que vai receber o resultado do barbeiro
@@ -257,13 +258,13 @@ int main() //thread calculations
             //cout << "Tempo de análise: " << mil_sec << endl;
             mil_sec = mil_sec % 1000000000;
             //cout << "Tempo de análise: " << mil_sec << endl;
-            if (fileName == "") {
-                cout << "Tempo de análise: não há arquivo de entrada" << endl;
-            }
-            else {
-                int latestTime = stoi(fileName.substr(posicaoInicial +1, posicaoInicial + 8));
-                cout << "Tempo de análise: " << mil_sec - latestTime << "ms" << endl;
-            }
+            // if (fileName == "") {
+            //     cout << "Tempo de análise: não há arquivo de entrada" << endl;
+            // }
+            // else {
+            //     int latestTime = stoi(fileName.substr(posicaoInicial +1, posicaoInicial + 8));
+            //     cout << "Tempo de análise: " << mil_sec - latestTime << "ms" << endl;
+            // }
         }
     }
     return 0;

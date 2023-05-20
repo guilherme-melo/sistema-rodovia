@@ -12,8 +12,18 @@
 #include <ctime>
 #include <sys/stat.h>
 #include <chrono>
+#include <bsoncxx/builder/basic/document.hpp>
+#include <bsoncxx/builder/stream/document.hpp>
+#include <bsoncxx/json.hpp>
+#include <mongocxx/client.hpp>
+#include <mongocxx/instance.hpp>
+#include <mongocxx/stdx.hpp>
+#include <mongocxx/uri.hpp>
 
-
+using bsoncxx::builder::basic::kvp;
+using bsoncxx::builder::basic::make_array;
+using bsoncxx::builder::basic::make_document;
+using bsoncxx::builder::stream::document;
 
 using namespace std;
 
@@ -22,9 +32,67 @@ typedef vector<Lane> Road;
 
 // PREPARE DATA----------------------------------------------------------------------------------
 
+//Connection with MongoDB
+mongocxx::instance instance{}; // This should be done only once.
+mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
+
+auto db = client["etl"];    
+
+std::string extractCarsValue(const std::string& jsonString) {
+    string PROPERTY = "cars";
+    std::size_t carsStartPos = jsonString.find(PROPERTY);
+
+    std::size_t openingBracePos = jsonString.find('{', carsStartPos);
+
+    std::size_t closingBracePos = jsonString.find('}', carsStartPos);
+
+    std::string carsObject = jsonString.substr(carsStartPos+PROPERTY.length()+4, closingBracePos - openingBracePos + 1);
+    return carsObject;
+
+}
+
+std::string getPlateString(const std::string& input) {
+    std::size_t startPos = input.find("\"");
+    std::size_t endPos = input.find("\"", startPos + 1);
+    return input.substr(startPos + 1, endPos - startPos - 1);
+}
+
+std::string getXPosition(const std::string& input) {
+
+    //Get string after :
+    std::size_t colonPos = input.find(":");
+    string pre_position = input.substr(colonPos + 1);
+
+    //Get string inside ""
+    std::size_t startPos = pre_position.find("\"");
+    std::size_t endPos = pre_position.find("\"", startPos + 1);
+    std::string position = pre_position.substr(startPos + 1, endPos - startPos - 1);
+
+    //Get left side of (X,Y)
+    std::size_t commaPos = position.find(",");
+    std::size_t openingParenthesisPos = position.find("(");
+    return position.substr(openingParenthesisPos + 1, commaPos - openingParenthesisPos - 1);
+}
+
+std::string getYPosition(const std::string& input) {
+    //Get string after :
+    std::size_t colonPos = input.find(":");
+    string pre_position = input.substr(colonPos + 1);
+
+    //Get string inside ""
+    std::size_t startPos = pre_position.find("\"");
+    std::size_t endPos = pre_position.find("\"", startPos + 1);
+    std::string position = pre_position.substr(startPos + 1, endPos - startPos - 1);
+
+    std::size_t commaPos = position.find(",");
+    std::size_t closingParenthesisPos = position.find(")");
+    return position.substr(commaPos + 1, closingParenthesisPos - commaPos - 1);
+}
+
+
 
 // Funcao que separa os dados dos arquivos em um vetor que contém uma pista em cada espaço
-Road splitData(string fileName)
+Road splitData(string file)
 {
     vector<string> plates;
     vector<int> x;
@@ -33,24 +101,33 @@ Road splitData(string fileName)
     string line;
     Lane *pista_anterior_ptr = nullptr;
 
-    // Separa os dados dos arquivos em um vetor que contém uma pista em cada espaço
-    ifstream file(fileName);
-    while (getline(file, line))
-    {
 
-        // Separa em substrings e insere nos vetores correspondentes
-        char delimiter = '(';
-        size_t pos_inicio = line.find(delimiter);
-        size_t pos_fim = line.find(',', pos_inicio);
+    //Split by ",
+    std::string delimiter = "\",";
+    std::vector<std::string> parts;
+    std::size_t startPos = 0;
+    std::size_t foundPos = file.find(delimiter);
 
-        x.push_back(stoi(line.substr(pos_inicio + 1, pos_fim - pos_inicio - 1)));
-        y.push_back(stoi(line.substr(pos_fim + 1, 1)));
+    while (foundPos != std::string::npos) {
+        std::string part = file.substr(startPos, foundPos - startPos);
+        parts.push_back(part);
 
-        plates.push_back(line.substr(0,5));
-        line.clear();
+        startPos = foundPos + delimiter.length();
+        foundPos = file.find(delimiter, startPos);
     }
 
-    file.close();
+    std::string lastPart = file.substr(startPos);
+    parts.push_back(lastPart);
+
+    for (string car : parts) {
+        std::string plate = getPlateString(car);
+        int p_x = stoi(getXPosition(car));
+        int p_y = stoi(getYPosition(car));
+
+        plates.push_back(plate);
+        x.push_back(p_x);
+        y.push_back(p_y);
+    }
 
     // Conta o numero de pistas
     auto N_PISTAS = max_element(y.begin(), y.end());
@@ -79,24 +156,12 @@ Road splitData(string fileName)
 // Funcao que retorna o nome de todas as pastas (rodovias)
 vector<string> get_roads()
 {
-
-    const char *folder_path = "./data/";
-    vector<string> folders;
-    DIR *dirp = opendir(folder_path);
-
-    struct dirent *entry;
-
-    while ((entry = readdir(dirp)) != NULL)
-    {
-        if (entry->d_type == DT_DIR && string(entry->d_name) != "." && string(entry->d_name) != "..")
-        {
-            folders.push_back(string(entry->d_name));
-        }
+    auto collection_names = db.list_collection_names();
+    vector<string> roads;
+    for (auto name : collection_names) {
+      roads.push_back(name);
     }
-
-    closedir(dirp);
-
-    return folders;
+    return roads;
 }
 
 // 2 (CALCULA VELOCIDADE, ACELERACAO, RISCO DE COLISAO) ----------------------------------------------------------------------------------
@@ -114,6 +179,7 @@ void calc_speed_thread(Road positions, Road *old_position, Road *calculated_spee
                 // Calcula a velocidade atual (posicao atual - posicao anterior)
                 int speed = get<1>(positions[i][j]) - get<1>(old_position->at(y_old)[x_old]);
                 speed = (int) abs(speed)/n_cicles;
+
                 // Cria uma tupla (placa, velocidade) e insere no vetor de velocidades calculadas
                 tuple<string,int> plate_speed = make_tuple(get<0>(positions[i][j]), speed);
 
@@ -134,7 +200,6 @@ Road calc_speed(Road positions, Road* old_position, int n_cicles){
     vector<thread> threads;
     mutex mtx;
     int count = 0;
-
     // Inicializa o vetor de velocidades calculadas com o tamanho do vetor de posicoes
     for (int i = 0; i < positions.size(); i++)
     {
@@ -162,6 +227,7 @@ Road calc_speed(Road positions, Road* old_position, int n_cicles){
     // Atualiza as posicoes anteriores
     Road old_position_var = positions;
     old_position = &old_position_var;
+
     return calculated_speed;
 }
 
@@ -317,7 +383,6 @@ void speed_limits(vector<string> folders, vector<int> *s_limits) {
     // Passa pelo vetor de pastas e pega o limite de velocidade de cada uma
     for (int i = s_limits->size(); i < folders.size(); i++) {
         size_t start = folders[i].find('_');
-        cout << folders[i] << endl;
         int speed =  stoi(folders[i].substr(start+1, folders[i].size()));
         s_limits->push_back(speed);
     }
@@ -365,90 +430,33 @@ vector<vector<tuple<string,bool>>> cars_above_limit(int limit, Road matrix_speed
     return answer;
 }
 
-// Função que busca os dados mais recentes
-tuple<string,time_t> getMostRecentData(const string &dirName) {
-    DIR *dir;
-    struct dirent *ent;
-    time_t newest_time = 0;
-    std::string newest_file;
-
-    // Abre o diretório
-    dir = opendir(dirName.c_str());
-
-    // Itera por todos os arquivos do diretório
-    while ((ent = readdir(dir)) != nullptr) {
-        std::string filename = ent->d_name;
-        std::string filepath = dirName + filename;
-        time_t newest_time = 0;
-        // Checa se estamos em um .txt
-        if (filename != "." && filename != "..") {
-            if (filename.substr(filename.size() - 4) == ".txt") {
-
-                // Pega o horario de modificacao do arquivo
-                struct stat st;
-                stat(filepath.c_str(), &st);
-                time_t mod_time = st.st_mtime;
-
-                // Atualiza newest_file e newest_time se esse arquivo for mais novo
-                if (mod_time > newest_time) {
-
-                    newest_file = filepath;
-                    newest_time = mod_time;
-                }
-            }
-        }
-    }
-
-    // Fecha o diretório
-    closedir(dir);
-    cout << newest_file << endl;
-    tuple<string,time_t> answer = make_tuple(newest_file, newest_time);
-    return answer;
-}
 
 //Aa função que deleta todos arquivos
-void deleteAllFiles (const string &dirName) {
-    DIR *dir;
-    struct dirent *ent;
-
-    // Abre o diretorio
-    dir = opendir(dirName.c_str());
-
-    // Itera por todos os arquivos no diretorio
-    while ((ent = readdir(dir)) != nullptr) {
-        std::string filename = ent->d_name;
-        std::string filepath = dirName + filename;
-        // Ignora . e .. 
-        if (filename == "." || filename == "..") {
-            continue;
-        }
-
-        // Delete the file
-        if (remove(filepath.c_str()) != 0) {
-            continue;
-        }
-    }
+void deleteAllDocuments (const string &dirName) {
+    mongocxx::collection coll = db[dirName];
+    mongocxx::stdx::optional<mongocxx::result::delete_result> result = coll.delete_many({});
 }
 
-string getMostRecentFile(const string& folderPath,int& iter) {
-    DIR* dirp = opendir(folderPath.c_str());
-    struct dirent * dp;
-    time_t latestTime = 0;
-    std::string latestFile;
-    while ((dp = readdir(dirp)) != NULL) {
+string getMostRecentFile(const string& collectionName,int& iter) {
+    mongocxx::collection coll = db[collectionName];
+
+    // Query for the most recent document
+    auto sort_doc = bsoncxx::builder::stream::document{} << "_id" << -1 << bsoncxx::builder::stream::finalize;
+    mongocxx::options::find opts;
+    opts.sort(sort_doc.view());
+    opts.limit(1);
+
+    auto cursor = coll.find({}, opts);
+
+    // Check if there is a result   
+    if (cursor.begin() != cursor.end()) {
         iter++;
-        struct stat fileStat;
-        std::string filePath = folderPath + dp->d_name;
-        if (stat(filePath.c_str(), &fileStat) == 0 && S_ISREG(fileStat.st_mode)) {
-            if (fileStat.st_mtime > latestTime) {
-                time_t l_time = fileStat.st_mtime;
-                // queremos reter o último tempo fora do escopo do if para atribui-lo
-                latestTime = l_time;
-                //cout << "ltime:" << *latestTime   << endl;
-                latestFile = filePath;
-            }
-        }
+        // Retrieve the most recent document
+        bsoncxx::document::view document_view = *cursor.begin();
+        std::string document_json = bsoncxx::to_json(document_view);
+
+        return document_json;
+    } else {
+        return "";
     }
-    closedir(dirp);
-    return latestFile;
 }
