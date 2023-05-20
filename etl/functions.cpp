@@ -448,15 +448,17 @@ string getMostRecentFile(const string& collectionName,int& iter) {
 
     auto cursor = coll.find({}, opts);
 
+
     // Check if there is a result   
-    if (cursor.begin() != cursor.end()) {
+    if (cursor.begin() == cursor.end()) {
+        return "";
+    } else {    
         iter++;
         // Retrieve the most recent document
+
         bsoncxx::document::view document_view = *cursor.begin();
         std::string document_json = bsoncxx::to_json(document_view);
 
         return document_json;
-    } else {
-        return "";
     }
 }

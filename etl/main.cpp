@@ -43,7 +43,7 @@ int main() //thread calculations
         int posicaoInicial;
         string file;
         for (int roadId = 0; roadId < roads_new.size(); roadId++) {
-            file = getMostRecentFile(roads[roadId],ref(iter));
+            file = getMostRecentFile(roads_new[roadId],ref(iter));
             if (file == "") {
                 cout << "No file found" << endl;
                 continue;
@@ -57,7 +57,7 @@ int main() //thread calculations
 
             Road positions = splitData(cars);
 
-            thread deleteDocs(deleteAllDocuments(), &roads[roadId]);
+            deleteAllDocuments(roads_new[roadId]);
             positions_list.push_back(positions);
 
 
@@ -111,8 +111,6 @@ int main() //thread calculations
 
             //Atualizar historyData ao fim do loop
             historyPositionsData[roadId] = positions;
-
-            deleteDocs.join();
         }
 
         //Inicialização do vetor que vai receber o resultado do barbeiro
@@ -142,7 +140,6 @@ int main() //thread calculations
             }
         }
 
-
         //Análise do número de carros
         int n_carros_simulacao = 0;
         for (int i = 0; i < positions_list.size(); i++) {
@@ -169,6 +166,7 @@ int main() //thread calculations
                 }
             }
         }
+
         cout <<"Número de carros na simulação: " << n_carros_simulacao << endl;
         int n_road = roads_new.size();
         cout << "Número de rodovias presentes na simulação: " << n_road << endl;
@@ -177,6 +175,7 @@ int main() //thread calculations
         for (int i = 0; i < t_vec.size() ; i++) {
             t_vec[i].join();
         }
+
 
 
         // Barbeiro
