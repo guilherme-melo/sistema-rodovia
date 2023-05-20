@@ -476,3 +476,17 @@ string getMostRecentFile(const string& collectionName,int& iter) {
         return document_json;
     }
 }
+
+void writeDataToCSV(const string& filename, int time, int n_roads) {
+    std::ofstream file(filename);
+
+    if (!file) {
+        std::cout << "Error opening the file." << std::endl;
+        return;
+    }
+
+    file << n_roads << ',' << time << std::endl;
+
+    file.close();
+    std::cout << "Data written to " << filename << " successfully." << std::endl;
+}

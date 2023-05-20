@@ -260,6 +260,12 @@ int main() //thread calculations
             //cout << "Tempo de análise: " << mil_sec << endl;
             mil_sec = mil_sec % 1000000000;
             cout << "Tempo de análise: " << mil_sec - time << "ms" << endl;
+            
+            std::ofstream file('tempo.csv');
+            file << 'N_Rodovias, Tempo' << std::endl;
+            file.close();
+            writeDataToCSV("tempo.csv", n_road, time);
+
             //cout << "Tempo de análise: " << mil_sec << endl;
             // if (fileName == "") {
             //     cout << "Tempo de análise: não há arquivo de entrada" << endl;
