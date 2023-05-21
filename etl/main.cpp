@@ -2,6 +2,11 @@
 
 int main() //thread calculations
 {
+
+    std::ofstream file("tempo.csv");
+    file << "N_Rodovias, Tempo" << std::endl;
+    file.close();
+
     // Inicializando historyVectors antes de começar o while
     vector<Road> historyPositionsData;
     vector<Road> historySpeedsData;
@@ -259,12 +264,10 @@ int main() //thread calculations
             long long mil_sec = ms.count();
             //cout << "Tempo de análise: " << mil_sec << endl;
             mil_sec = mil_sec % 1000000000;
-            cout << "Tempo de análise: " << mil_sec - time << "ms" << endl;
+            int analysisTime = mil_sec - time;
+            cout << "Tempo de análise: " << analysisTime << "ms" << endl;
             
-            std::ofstream file('tempo.csv');
-            file << 'N_Rodovias, Tempo' << std::endl;
-            file.close();
-            writeDataToCSV("tempo.csv", n_road, time);
+            writeDataToCSV("tempo.csv", n_road, analysisTime);
 
             //cout << "Tempo de análise: " << mil_sec << endl;
             // if (fileName == "") {
