@@ -58,6 +58,11 @@ int main() //thread calculations
             saveDataInHistoryVector(roads_new, roadId, ref(positions_list), ref(cicles[roadId]), ref(times[roadId]));
         }
 
+        for (int time : times) {
+            cout << "AQUI" << endl;
+            cout << time << endl;
+        }
+
         //TRANSFORM - Compute riskColision for each document
         for (int roadId = 0; roadId < roads_new.size(); roadId++) {
             Road positions = positions_list[roadId]; 
@@ -266,11 +271,14 @@ int main() //thread calculations
             //cout << "Tempo de análise: " << mil_sec << endl;
 
             mil_sec = mil_sec % 1000000000;
-
             int analysisTime = mil_sec - times[road];
-            cout << "Tempo de análise: " << analysisTime << "ms" << endl;
-            
-            writeDataToCSV("tempo.csv", n_road, analysisTime);
+
+            if (times[road] == 0 || abs(analysisTime) > 100000 ) {
+                continue;
+            } else {    
+                cout << "Tempo de análise: " << analysisTime << "ms" << endl;
+                writeDataToCSV("tempo.csv", n_road, analysisTime);
+            }
         }
     }
     return 0;

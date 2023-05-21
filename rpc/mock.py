@@ -13,7 +13,7 @@ import sys
 
 # carol 192.168.137.1
 # cris 10.42.0.1
-SERVER_IP = '10.42.0.1'
+SERVER_IP = '127.0.0.1'
 SERVER_PORT = '50051'
 
 class vehicle:
