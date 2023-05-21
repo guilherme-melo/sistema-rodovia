@@ -478,7 +478,7 @@ string getMostRecentFile(const string& collectionName,int& iter) {
 }
 
 void writeDataToCSV(const string& filename, int time, int n_roads) {
-    std::ofstream file(filename);
+    std::fstream file(filename, ios::app);
 
     if (!file) {
         std::cout << "Error opening the file." << std::endl;
