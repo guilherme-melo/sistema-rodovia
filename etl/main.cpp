@@ -2,19 +2,25 @@
 
 int main() //thread calculations
 {
+
+    std::fstream file_tempo("tempo.csv");
+    file_tempo << "N_Rodovias, Tempo" << std::endl;
+    file_tempo.close();
+
     // Inicializando historyVectors antes de começar o while
     vector<Road> historyPositionsData;
     vector<Road> historySpeedsData;
+    vector<Road> positions_list;
     vector<string> roads = get_roads();
     int old_roads_size = roads.size();
     for (int roadId = 0; roadId < roads.size(); roadId++) {
         Road temp;
         historyPositionsData.push_back(temp);
         historySpeedsData.push_back(temp);
-
+        positions_list.push_back(temp);
     }
 
-    int capacity = 40; // Tamanho da fila do barbeiro
+    int capacity = 0; // Tamanho da fila do barbeiro
     Legado legado(capacity);
     while (true)
     {
@@ -24,46 +30,39 @@ int main() //thread calculations
         vector<string> roads_new = get_roads();
         vector<int> speed_limit_list;
         speed_limits(roads_new, &speed_limit_list);
+        
         if (roads_new.size() > old_roads_size){
             for (int i = 0; i < roads_new.size() - roads.size(); i++){
                 Road temp;
                 historyPositionsData.push_back(temp);
                 historySpeedsData.push_back(temp);
+                positions_list.push_back(temp);
             }
             old_roads_size = roads_new.size();
         }
+
         cout << "-----------HEADER-----------" << endl;
-        vector<Road> positions_list;
+
         vector<Road> speeds_list;
         vector<Road> accelerations_list;
         vector<Road> collision_risk_list;
 
         // Pegando os dados mais recentes
-        int iter = 0;
+        vector<int> cicles(roads_new.size(), 0);
         int posicaoInicial;
-        int time;
+        vector<int> times(roads_new.size(), 0);
         string file;
+
+        //EXTRACT - Get the most recent document of each collection and save in positions_list (in parallel)
         for (int roadId = 0; roadId < roads_new.size(); roadId++) {
-            file = getMostRecentFile(roads_new[roadId],ref(iter));
-            if (file == "") {
-                cout << "No file found" << endl;
-                continue;
-            }
+            saveDataInHistoryVector(roads_new, roadId, ref(positions_list), ref(cicles[roadId]), ref(times[roadId]));
+        }
 
-            string cars = extractCarsValue(file);
-            if (cars == "") {
-                cout << "No car data found" << endl;
-                continue;
-            }
+        //TRANSFORM - Compute riskColision for each document
+        for (int roadId = 0; roadId < roads_new.size(); roadId++) {
+            Road positions = positions_list[roadId]; 
 
-            time = stoi(extractTime(file));
-
-            Road positions = splitData(cars);
-
-            deleteAllDocuments(roads_new[roadId]);
-            positions_list.push_back(positions);
-
-
+            //deleteAllDocuments(roads_new[roadId]);
             Road* old_positions = &historyPositionsData[roadId];
             Road* old_speeds = &historySpeedsData[roadId];
 
@@ -80,14 +79,14 @@ int main() //thread calculations
             }
             else if (old_speeds->size() == 0) {
 
-                Road speeds = calc_speed(positions, old_positions,iter); // thread pra calcular pra cada lane -> join
+                Road speeds = calc_speed(positions, old_positions, cicles[roadId]); // thread pra calcular pra cada lane -> join
                 speeds_list.push_back(speeds);
                 cout << "Without history data" << endl;
                 historySpeedsData[roadId] = speeds;
             }
 
             else {
-                Road speeds = calc_speed(positions, old_positions,iter);
+                Road speeds = calc_speed(positions, old_positions, cicles[roadId]);
                 speeds_list.push_back(speeds);
                 Road accel = calc_accel(speeds, old_speeds); // threads pra calcular pra cada lane -> join
                 accelerations_list.push_back(accel);
@@ -114,6 +113,7 @@ int main() //thread calculations
 
             //Atualizar historyData ao fim do loop
             historyPositionsData[roadId] = positions;
+
         }
 
         //Inicialização do vetor que vai receber o resultado do barbeiro
@@ -144,6 +144,7 @@ int main() //thread calculations
         }
 
         //Análise do número de carros
+
         int n_carros_simulacao = 0;
         for (int i = 0; i < positions_list.size(); i++) {
             for (int j = 0; j < positions_list[i].size(); j++) {
@@ -153,6 +154,9 @@ int main() //thread calculations
             if (historyPositionsData[i].size() != 0) {
                 if (historySpeedsData[i].size() != 0) {
                     //Análise de carros acima da velocidade
+
+                    cout << speed_limit_list.size() << endl;
+                    cout << speeds_list.size() << endl;
                     vector<vector<tuple<string,bool>>> numbers_of_car = cars_above_limit(speed_limit_list[i], speeds_list[i]);
 
 
@@ -169,6 +173,8 @@ int main() //thread calculations
                 }
             }
         }
+        cout << "debug1" << endl;
+
 
         cout <<"Número de carros na simulação: " << n_carros_simulacao << endl;
         int n_road = roads_new.size();
@@ -258,22 +264,13 @@ int main() //thread calculations
             //removes the 5 first digits of ms
             long long mil_sec = ms.count();
             //cout << "Tempo de análise: " << mil_sec << endl;
-            mil_sec = mil_sec % 1000000000;
-            cout << "Tempo de análise: " << mil_sec - time << "ms" << endl;
-            
-            std::ofstream file('tempo.csv');
-            file << 'N_Rodovias, Tempo' << std::endl;
-            file.close();
-            writeDataToCSV("tempo.csv", n_road, time);
 
-            //cout << "Tempo de análise: " << mil_sec << endl;
-            // if (fileName == "") {
-            //     cout << "Tempo de análise: não há arquivo de entrada" << endl;
-            // }
-            // else {
-            //     int latestTime = stoi(fileName.substr(posicaoInicial +1, posicaoInicial + 8));
-            //     cout << "Tempo de análise: " << mil_sec - latestTime << "ms" << endl;
-            // }
+            mil_sec = mil_sec % 1000000000;
+
+            int analysisTime = mil_sec - times[road];
+            cout << "Tempo de análise: " << analysisTime << "ms" << endl;
+            
+            writeDataToCSV("tempo.csv", n_road, analysisTime);
         }
     }
     return 0;

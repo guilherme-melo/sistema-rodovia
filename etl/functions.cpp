@@ -38,6 +38,32 @@ mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
 
 auto db = client["etl"];    
 
+string getMostRecentFile(const string& collectionName,int& iter) {
+    mongocxx::collection coll = db[collectionName];
+
+    // Query for the most recent document
+    auto sort_doc = bsoncxx::builder::stream::document{} << "_id" << -1 << bsoncxx::builder::stream::finalize;
+    mongocxx::options::find opts;
+    opts.sort(sort_doc.view());
+    opts.limit(1);
+
+    auto cursor = coll.find({}, opts);
+
+
+    // Check if there is a result   
+    if (cursor.begin() == cursor.end()) {
+        return "";
+    } else {    
+        iter++;
+        // Retrieve the most recent document
+
+        bsoncxx::document::view document_view = *cursor.begin();
+        std::string document_json = bsoncxx::to_json(document_view);
+
+        return document_json;
+    }
+}
+
 std::string extractCarsValue(const std::string& jsonString) {
     string PROPERTY = "cars";
     std::size_t carsStartPos = jsonString.find(PROPERTY);
@@ -103,8 +129,6 @@ std::string getYPosition(const std::string& input) {
     return position.substr(commaPos + 1, closingParenthesisPos - commaPos - 1);
 }
 
-
-
 // Funcao que separa os dados dos arquivos em um vetor que contém uma pista em cada espaço
 Road splitData(string file)
 {
@@ -163,6 +187,26 @@ Road splitData(string file)
         por_pista.push_back(pista);
     }
     return por_pista;
+}
+
+void saveDataInHistoryVector(vector<string> roads, int roadId, vector<Road> &positions_list, int& iter, int& time) {
+    string file = getMostRecentFile(roads[roadId],iter);
+    if (file == "") {
+        cout << "No file found" << endl;
+        return;
+    }
+
+    string cars = extractCarsValue(file);
+    if (cars == "") {
+        cout << "No car data found" << endl;
+        return;
+    }
+
+    time = stoi(extractTime(file));
+
+    Road positions = splitData(cars);
+
+    positions_list.at(roadId) = positions;
 }
 
 // 1 ( RODOVIAS) ----------------------------------------------------------------------------------
@@ -405,14 +449,28 @@ void speed_limits(vector<string> folders, vector<int> *s_limits) {
 
 // Funcao que checa se cada carro esta acima do limite de velocidade pista por pista
 void is_above_limit(Lane* lane_to_calc,int limit, vector<vector<tuple<string,bool>>>* answer, mutex& mtx) {
+     cout << "debug1" << endl;
+
     int size = lane_to_calc->size();
+    cout << "debug2" << endl;
+
     vector<tuple<string,bool>> answ;
+    cout << "debug3" << endl;
+
 
     // Passa pelo vetor da pista checando se cada carro está acima do limite e adiciona o resultado booleano a um vetor
     for (int i = 0; i < size; i++) {
+        cout << "debug4" << endl;
+
         bool is_above = (get<1>(lane_to_calc->at(i)) > limit);
+        cout << "debug5" << endl;
+
         tuple<string,bool> car = make_tuple(get<0>(lane_to_calc->at(i)), is_above);
+        cout << "debug6" << endl;
+
         answ.push_back(car);
+        cout << "debug7" << endl;
+
     }
 
     // Insere o vetor de resultados na matriz de resultados protegendo com mutex
@@ -429,11 +487,19 @@ vector<vector<tuple<string,bool>>> cars_above_limit(int limit, Road matrix_speed
     vector<thread> t_vec;
     mutex mtx;
     int count = 0;
+            cout << "teste1" << endl;
+
     int size = matrix_speeds.size();
 
     // Passa uma pista para cada thread para o calculo com a funcao is_above_limit
     for (int i = 0; i < size; i++) {
+        cout << "teste1" << endl;
+        cout <<  matrix_speeds.size() << endl;
+        cout << "teste2" << endl;
+
+
         t_vec.push_back(thread(is_above_limit, &matrix_speeds[i], limit, &answer, ref(mtx)));
+
         count++;
     }
 
@@ -451,34 +517,8 @@ void deleteAllDocuments (const string &dirName) {
     mongocxx::stdx::optional<mongocxx::result::delete_result> result = coll.delete_many({});
 }
 
-string getMostRecentFile(const string& collectionName,int& iter) {
-    mongocxx::collection coll = db[collectionName];
-
-    // Query for the most recent document
-    auto sort_doc = bsoncxx::builder::stream::document{} << "_id" << -1 << bsoncxx::builder::stream::finalize;
-    mongocxx::options::find opts;
-    opts.sort(sort_doc.view());
-    opts.limit(1);
-
-    auto cursor = coll.find({}, opts);
-
-
-    // Check if there is a result   
-    if (cursor.begin() == cursor.end()) {
-        return "";
-    } else {    
-        iter++;
-        // Retrieve the most recent document
-
-        bsoncxx::document::view document_view = *cursor.begin();
-        std::string document_json = bsoncxx::to_json(document_view);
-
-        return document_json;
-    }
-}
-
 void writeDataToCSV(const string& filename, int time, int n_roads) {
-    std::ofstream file(filename);
+    std::fstream file(filename, ios::app);
 
     if (!file) {
         std::cout << "Error opening the file." << std::endl;
