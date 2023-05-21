@@ -449,27 +449,14 @@ void speed_limits(vector<string> folders, vector<int> *s_limits) {
 
 // Funcao que checa se cada carro esta acima do limite de velocidade pista por pista
 void is_above_limit(Lane* lane_to_calc,int limit, vector<vector<tuple<string,bool>>>* answer, mutex& mtx) {
-     cout << "debug1" << endl;
-
     int size = lane_to_calc->size();
-    cout << "debug2" << endl;
-
     vector<tuple<string,bool>> answ;
-    cout << "debug3" << endl;
-
 
     // Passa pelo vetor da pista checando se cada carro está acima do limite e adiciona o resultado booleano a um vetor
     for (int i = 0; i < size; i++) {
-        cout << "debug4" << endl;
-
         bool is_above = (get<1>(lane_to_calc->at(i)) > limit);
-        cout << "debug5" << endl;
-
         tuple<string,bool> car = make_tuple(get<0>(lane_to_calc->at(i)), is_above);
-        cout << "debug6" << endl;
-
         answ.push_back(car);
-        cout << "debug7" << endl;
 
     }
 
@@ -487,19 +474,12 @@ vector<vector<tuple<string,bool>>> cars_above_limit(int limit, Road matrix_speed
     vector<thread> t_vec;
     mutex mtx;
     int count = 0;
-            cout << "teste1" << endl;
 
     int size = matrix_speeds.size();
 
     // Passa uma pista para cada thread para o calculo com a funcao is_above_limit
     for (int i = 0; i < size; i++) {
-        cout << "teste1" << endl;
-        cout <<  matrix_speeds.size() << endl;
-        cout << "teste2" << endl;
-
-
         t_vec.push_back(thread(is_above_limit, &matrix_speeds[i], limit, &answer, ref(mtx)));
-
         count++;
     }
 

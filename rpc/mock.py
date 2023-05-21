@@ -234,7 +234,7 @@ def main(num_instances):
     
     while i < num_instances:
         for i in range(num_instances):
-            time.sleep(1)
+            time.sleep(2)
             road_fwd = road("road" + str(i), 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
             road_bwd = road("road" + str(i), 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
             p = mp.Process(target=simulate_road, args=(road_fwd, road_bwd))

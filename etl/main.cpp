@@ -52,22 +52,18 @@ int main() //thread calculations
         int posicaoInicial;
         vector<int> times(roads_new.size(), 0);
         string file;
-
+        
         //EXTRACT - Get the most recent document of each collection and save in positions_list (in parallel)
         for (int roadId = 0; roadId < roads_new.size(); roadId++) {
             saveDataInHistoryVector(roads_new, roadId, ref(positions_list), ref(cicles[roadId]), ref(times[roadId]));
         }
 
-        for (int time : times) {
-            cout << "AQUI" << endl;
-            cout << time << endl;
-        }
+        //deleteAllDocuments(roads_new[roadId]);
 
         //TRANSFORM - Compute riskColision for each document
         for (int roadId = 0; roadId < roads_new.size(); roadId++) {
             Road positions = positions_list[roadId]; 
 
-            //deleteAllDocuments(roads_new[roadId]);
             Road* old_positions = &historyPositionsData[roadId];
             Road* old_speeds = &historySpeedsData[roadId];
 
@@ -159,9 +155,6 @@ int main() //thread calculations
             if (historyPositionsData[i].size() != 0) {
                 if (historySpeedsData[i].size() != 0) {
                     //Análise de carros acima da velocidade
-
-                    cout << speed_limit_list.size() << endl;
-                    cout << speeds_list.size() << endl;
                     vector<vector<tuple<string,bool>>> numbers_of_car = cars_above_limit(speed_limit_list[i], speeds_list[i]);
 
 
@@ -178,8 +171,6 @@ int main() //thread calculations
                 }
             }
         }
-        cout << "debug1" << endl;
-
 
         cout <<"Número de carros na simulação: " << n_carros_simulacao << endl;
         int n_road = roads_new.size();
@@ -189,12 +180,6 @@ int main() //thread calculations
         for (int i = 0; i < t_vec.size() ; i++) {
             t_vec[i].join();
         }
-
-
-
-        // Barbeiro
-        //vector<vector<string>> cars_data;
-        //prepare_to_barber(&positions_list, &legado, &cars_data);
 
         //DASHBOARD
         cout << "------------------" << endl;
@@ -268,7 +253,6 @@ int main() //thread calculations
             chrono::milliseconds ms = chrono::duration_cast< chrono::milliseconds >(chrono::system_clock::now().time_since_epoch() );
             //removes the 5 first digits of ms
             long long mil_sec = ms.count();
-            //cout << "Tempo de análise: " << mil_sec << endl;
 
             mil_sec = mil_sec % 1000000000;
             int analysisTime = mil_sec - times[road];
