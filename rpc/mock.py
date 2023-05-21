@@ -245,8 +245,6 @@ def main(num_instances):
             p.join()
 
         i = i + 1
-
-        time.sleep(3)
         
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
