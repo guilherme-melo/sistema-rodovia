@@ -73,6 +73,7 @@ std::string extractCarsValue(const std::string& jsonString) {
     std::size_t closingBracePos = jsonString.find('}', carsStartPos);
 
     std::string carsObject = jsonString.substr(carsStartPos+PROPERTY.length()+4, closingBracePos - openingBracePos + 1);
+    cout << "OBJETO: " << carsObject << endl;
     return carsObject;
 
 }
@@ -86,8 +87,7 @@ std::string extractTime(const std::string& jsonString) {
 
     std::size_t closingQuotePos = jsonString.find('"', openingQuotePos+1);
 
-    std::string timeObject = jsonString.substr(openingQuotePos + 1, closingQuotePos - openingQuotePos - 1 );
-    
+    std::string timeObject = jsonString.substr(openingQuotePos + 1, closingQuotePos - openingQuotePos -1);
     return timeObject;
 }
 
@@ -189,20 +189,22 @@ Road splitData(string file)
     return por_pista;
 }
 
-void saveDataInHistoryVector(vector<string> roads, int roadId, vector<Road> &positions_list, int& iter, int& time) {
+void saveDataInHistoryVector(vector<string> roads, int roadId, vector<Road> &positions_list, int& iter, long long& time) {
     string file = getMostRecentFile(roads[roadId],iter);
+    cout << "JSON LIDO: " << file << endl;
     if (file == "") {
         cout << "No file found" << endl;
         return;
     }
 
     string cars = extractCarsValue(file);
-    if (cars == "") {
+    if (cars == "{  }") {
         cout << "No car data found" << endl;
         return;
     }
 
-    time = stoi(extractTime(file));
+    time = stoll(extractTime(file));
+    cout << "TEMPO NO JSON: " << time << endl;
 
     Road positions = splitData(cars);
 
@@ -497,7 +499,7 @@ void deleteAllDocuments (const string &dirName) {
     mongocxx::stdx::optional<mongocxx::result::delete_result> result = coll.delete_many({});
 }
 
-void writeDataToCSV(const string& filename, int time, int n_roads) {
+void writeDataToCSV(const string& filename, int time, string n_roads, int time_road) {
     std::fstream file(filename, ios::app);
 
     if (!file) {
@@ -505,7 +507,7 @@ void writeDataToCSV(const string& filename, int time, int n_roads) {
         return;
     }
 
-    file << n_roads << ',' << time << std::endl;
+    file << n_roads << ',' << time << "," << time_road << std::endl;
 
     file.close();
     std::cout << "Data written to " << filename << " successfully." << std::endl;

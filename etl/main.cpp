@@ -50,7 +50,7 @@ int main() //thread calculations
         // Pegando os dados mais recentes
         vector<int> cicles(roads_new.size(), 0);
         int posicaoInicial;
-        vector<int> times(roads_new.size(), 0);
+        vector<long long> times(roads_new.size(), 0);
         string file;
         
         //EXTRACT - Get the most recent document of each collection and save in positions_list (in parallel)
@@ -63,7 +63,7 @@ int main() //thread calculations
         //TRANSFORM - Compute riskColision for each document
         for (int roadId = 0; roadId < roads_new.size(); roadId++) {
             Road positions = positions_list[roadId]; 
-
+            cout << "debug1" << endl;
             Road* old_positions = &historyPositionsData[roadId];
             Road* old_speeds = &historySpeedsData[roadId];
 
@@ -111,6 +111,7 @@ int main() //thread calculations
                 collision_risk_list.push_back(collision_risk);
                 historySpeedsData[roadId] = speeds;
             }
+            cout << "debug2" << endl;
 
             //Atualizar historyData ao fim do loop
             historyPositionsData[roadId] = positions;
@@ -250,18 +251,10 @@ int main() //thread calculations
                 }
             }
 
-            chrono::milliseconds ms = chrono::duration_cast< chrono::milliseconds >(chrono::system_clock::now().time_since_epoch() );
-            //removes the 5 first digits of ms
-            long long mil_sec = ms.count();
-
-            mil_sec = mil_sec % 1000000000;
-            int analysisTime = mil_sec - times[road];
-
-            if (times[road] == 0 || abs(analysisTime) > 100000 ) {
-                continue;
-            } else {    
-                cout << "Tempo de análise: " << analysisTime << "ms" << endl;
-                writeDataToCSV("tempo.csv", n_road, analysisTime);
+            if (times[road]!=0) { 
+                long long ms = chrono::duration_cast< chrono::milliseconds >(chrono::system_clock::now().time_since_epoch()) / chrono::milliseconds(1);
+                int analysisTime = ms - times[road];
+                writeDataToCSV("tempo.csv", ms, positions_list[road], times[road]);
             }
         }
     }

@@ -202,8 +202,12 @@ def simulate_road(road_fwd, road_bwd):
     last_request_name = None 
     
     while True:
+        print("================")
         tempo = int(1000*time.time())
-        tempo = str(tempo)[-9:]
+        print(time.time())
+        tempo = str(tempo)
+        print(tempo)
+        print("==============")
         sub(road_fwd, "forward")
         stringForward = write_to_string(road_fwd.name, road_fwd.max_speed, road_fwd.vehicles, tempo, "forward", road_fwd.lanes, road_fwd.size)
         sub(road_bwd, "backward")
