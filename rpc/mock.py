@@ -11,9 +11,7 @@ import rpc_pb2_grpc
 import signal
 import sys
 
-# carol 192.168.137.1
-# cris 10.42.0.1
-SERVER_IP = '127.0.0.1'
+SERVER_IP = 'localhost'
 SERVER_PORT = '50051'
 
 class vehicle:
@@ -202,8 +200,12 @@ def simulate_road(road_fwd, road_bwd):
     last_request_name = None 
     
     while True:
+        print("================")
         tempo = int(1000*time.time())
-        tempo = str(tempo)[-9:]
+        print(time.time())
+        tempo = str(tempo)
+        print(tempo)
+        print("==============")
         sub(road_fwd, "forward")
         stringForward = write_to_string(road_fwd.name, road_fwd.max_speed, road_fwd.vehicles, tempo, "forward", road_fwd.lanes, road_fwd.size)
         sub(road_bwd, "backward")
@@ -231,23 +233,19 @@ def main(num_instances):
     global processes
     processes = []
     i = 0
-    total_ciclos = 10000
     
     while i < num_instances:
-        for ciclo in range(total_ciclos):
-            for i in range(num_instances):
-                time.sleep(0.05)
-                road_fwd = road("road" + str(i), 2, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
-                road_bwd = road("road" + str(i), 2, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
-                p = mp.Process(target=simulate_road, args=(road_fwd, road_bwd))
-                p.start()
-                processes.append(p)
-            
-            for p in processes:
-                p.join()
+        time.sleep(2)
+        road_fwd = road("road" + str(i), 5, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
+        road_bwd = road("road" + str(i), 5, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
+        p = mp.Process(target=simulate_road, args=(road_fwd, road_bwd))
+        p.start()
+        processes.append(p)
+        i += 1
         
-        i = i + 1
-        
+    for p in processes:
+        p.join()
+
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
     num_instances = int(input("Enter the number of instances: "))
