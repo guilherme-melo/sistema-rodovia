@@ -11,8 +11,6 @@ import rpc_pb2_grpc
 import signal
 import sys
 
-# carol 192.168.137.1
-# cris 10.42.0.1
 SERVER_IP = '10.42.0.1'
 SERVER_PORT = '50051'
 
@@ -238,8 +236,8 @@ def main(num_instances):
     
     while i < num_instances:
         time.sleep(2)
-        road_fwd = road("road" + str(i), 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
-        road_bwd = road("road" + str(i), 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
+        road_fwd = road("road" + str(i), 5, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
+        road_bwd = road("road" + str(i), 5, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
         p = mp.Process(target=simulate_road, args=(road_fwd, road_bwd))
         p.start()
         processes.append(p)
