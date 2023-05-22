@@ -231,19 +231,21 @@ def main(num_instances):
     global processes
     processes = []
     i = 0
+    total_ciclos = 10000
     
     while i < num_instances:
-        for i in range(num_instances):
-            time.sleep(2)
-            road_fwd = road("road" + str(i), 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
-            road_bwd = road("road" + str(i), 3, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
-            p = mp.Process(target=simulate_road, args=(road_fwd, road_bwd))
-            p.start()
-            processes.append(p)
+        for ciclo in range(total_ciclos):
+            for i in range(num_instances):
+                time.sleep(0.05)
+                road_fwd = road("road" + str(i), 2, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
+                road_bwd = road("road" + str(i), 2, 150000, 5, .5, .1, 120, 60, .2, 5, 2,200)
+                p = mp.Process(target=simulate_road, args=(road_fwd, road_bwd))
+                p.start()
+                processes.append(p)
+            
+            for p in processes:
+                p.join()
         
-        for p in processes:
-            p.join()
-
         i = i + 1
         
 if __name__ == '__main__':

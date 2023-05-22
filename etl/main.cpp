@@ -19,7 +19,7 @@ int main() //thread calculations
 
     }
 
-    int capacity = 40; // Tamanho da fila do barbeiro
+    int capacity = 0; // Tamanho da fila do barbeiro
     Legado legado(capacity);
     while (true)
     {
@@ -56,16 +56,12 @@ int main() //thread calculations
             }
 
             string cars = extractCarsValue(file);
-            if (cars == "") {
-                cout << "No car data found" << endl;
-                continue;
-            }
 
             time = stoi(extractTime(file));
 
             Road positions = splitData(cars);
 
-            deleteAllDocuments(roads_new[roadId]);
+            //deleteAllDocuments(roads_new[roadId]);
             positions_list.push_back(positions);
 
 
@@ -194,90 +190,91 @@ int main() //thread calculations
         cout << "------------------" << endl;
         int count_cars = 0;
 
-        for (int road = 0; road < positions_list.size(); road++) {
-            for (int lane = 0; lane < positions_list[road].size(); lane++) {
-                for (int car = 0; car < positions_list[road][lane].size(); car++) {
+            for (int road = 0; road < positions_list.size(); road++) {
+                for (int lane = 0; lane < positions_list[road].size(); lane++) {
+                    for (int car = 0; car < positions_list[road][lane].size(); car++) {
 
-                    cout << "---------------" << endl;
-                    cout << "Placa: " << get<0>(positions_list[road][lane][car]) << endl;
-                    cout << "Posição: " << get<1>(positions_list[road][lane][car]) << " , " << lane << endl;
+                        cout << "---------------" << endl;
+                        cout << "Placa: " << get<0>(positions_list[road][lane][car]) << endl;
+                        cout << "Posição: " << get<1>(positions_list[road][lane][car]) << " , " << lane << endl;
 
-                    bool speed_found = false;
-                    for (int road_speed = 0; road_speed < speeds_list.size(); road_speed++) {
-                        for (int lane_speed = 0; lane_speed < speeds_list[road_speed].size(); lane_speed++) {
-                            for (int car_speed = 0; car_speed < speeds_list[road_speed][lane_speed].size(); car_speed++) {
-                                if (get<0>(speeds_list[road_speed][lane_speed][car_speed]) == get<0>(positions_list[road][lane][car])) {
-                                    cout << "Velocidade: " << get<1>(speeds_list[road_speed][lane_speed][car_speed]) << endl;
-                                    speed_found = true;
-                                    break;
+                        bool speed_found = false;
+                        for (int road_speed = 0; road_speed < speeds_list.size(); road_speed++) {
+                            for (int lane_speed = 0; lane_speed < speeds_list[road_speed].size(); lane_speed++) {
+                                for (int car_speed = 0; car_speed < speeds_list[road_speed][lane_speed].size(); car_speed++) {
+                                    if (get<0>(speeds_list[road_speed][lane_speed][car_speed]) == get<0>(positions_list[road][lane][car])) {
+                                        cout << "Velocidade: " << get<1>(speeds_list[road_speed][lane_speed][car_speed]) << endl;
+                                        speed_found = true;
+                                        break;
+                                    }
                                 }
                             }
                         }
-                    }
-                    if (!speed_found) {
-                        cout << "Velocidade: Sem dados" << endl;
-                    }
+                        if (!speed_found) {
+                            cout << "Velocidade: Sem dados" << endl;
+                        }
 
-                    bool acceleration_found = false;
-                    for (int road_acceleration = 0; road_acceleration < accelerations_list.size(); road_acceleration++) {
-                        for (int lane_acceleration = 0; lane_acceleration < accelerations_list[road_acceleration].size(); lane_acceleration++) {
-                            for (int car_acceleration = 0; car_acceleration < accelerations_list[road_acceleration][lane_acceleration].size(); car_acceleration++) {
-                                if (get<0>(accelerations_list[road_acceleration][lane_acceleration][car_acceleration]) == get<0>(positions_list[road][lane][car])) {
-                                    cout << "Aceleração: " << get<1>(accelerations_list[road_acceleration][lane_acceleration][car_acceleration]) << endl;
-                                    acceleration_found = true;
-                                    break;
+                        bool acceleration_found = false;
+                        for (int road_acceleration = 0; road_acceleration < accelerations_list.size(); road_acceleration++) {
+                            for (int lane_acceleration = 0; lane_acceleration < accelerations_list[road_acceleration].size(); lane_acceleration++) {
+                                for (int car_acceleration = 0; car_acceleration < accelerations_list[road_acceleration][lane_acceleration].size(); car_acceleration++) {
+                                    if (get<0>(accelerations_list[road_acceleration][lane_acceleration][car_acceleration]) == get<0>(positions_list[road][lane][car])) {
+                                        cout << "Aceleração: " << get<1>(accelerations_list[road_acceleration][lane_acceleration][car_acceleration]) << endl;
+                                        acceleration_found = true;
+                                        break;
+                                    }
                                 }
                             }
                         }
-                    }
-                    if (!acceleration_found) {
-                        cout << "Aceleração: Sem dados" << endl;
-                    }
+                        if (!acceleration_found) {
+                            cout << "Aceleração: Sem dados" << endl;
+                        }
 
-                    bool collision_risk_found = false;
-                    for (int road_collision = 0; road_collision < collision_risk_list.size(); road_collision++) {
-                        for (int lane_collision = 0; lane_collision < collision_risk_list[road_collision].size(); lane_collision++) {
-                            for (int car_collision = 0; car_collision < collision_risk_list[road_collision][lane_collision].size(); car_collision++) {
-                                if (get<0>(collision_risk_list[road_collision][lane_collision][car_collision]) == get<0>(positions_list[road][lane][car])) {
-                                    cout << "Risco de colisão: " << get<1>(collision_risk_list[road_collision][lane_collision][car_collision]) << endl;
-                                    collision_risk_found = true;
-                                    break;
+                        bool collision_risk_found = false;
+                        for (int road_collision = 0; road_collision < collision_risk_list.size(); road_collision++) {
+                            for (int lane_collision = 0; lane_collision < collision_risk_list[road_collision].size(); lane_collision++) {
+                                for (int car_collision = 0; car_collision < collision_risk_list[road_collision][lane_collision].size(); car_collision++) {
+                                    if (get<0>(collision_risk_list[road_collision][lane_collision][car_collision]) == get<0>(positions_list[road][lane][car])) {
+                                        cout << "Risco de colisão: " << get<1>(collision_risk_list[road_collision][lane_collision][car_collision]) << endl;
+                                        collision_risk_found = true;
+                                        break;
+                                    }
                                 }
                             }
-                        }
-                }
-                if (!collision_risk_found) {
-                    cout << "Risco de colisão: Sem dados" << endl;
-                }
+                    }
+                    if (!collision_risk_found) {
+                        cout << "Risco de colisão: Sem dados" << endl;
+                    }
 
 
-                    cout << "Modelo: " << cars_data[count_cars][0] << endl;
-                    cout << "Ano: " << cars_data[count_cars][1] << endl;
-                    cout << "Proprietário: " << cars_data[count_cars][2] << endl;
-                    count_cars++;
-                    cout << "---------------" << endl;
+                        cout << "Modelo: " << cars_data[count_cars][0] << endl;
+                        cout << "Ano: " << cars_data[count_cars][1] << endl;
+                        cout << "Proprietário: " << cars_data[count_cars][2] << endl;
+                        count_cars++;
+                        cout << "---------------" << endl;
+                    }
                 }
+
+                chrono::milliseconds ms = chrono::duration_cast< chrono::milliseconds >(chrono::system_clock::now().time_since_epoch() );
+                //removes the 5 first digits of ms
+                long long mil_sec = ms.count();
+                //cout << "Tempo de análise: " << mil_sec << endl;
+                mil_sec = mil_sec % 1000000000;
+                int analysisTime = mil_sec - time;
+                cout << "Tempo de análise: " << analysisTime << "ms" << endl;
+                
+                writeDataToCSV("tempo.csv", n_road, analysisTime);
+
+                //cout << "Tempo de análise: " << mil_sec << endl;
+                // if (fileName == "") {
+                //     cout << "Tempo de análise: não há arquivo de entrada" << endl;
+                // }
+                // else {
+                //     int latestTime = stoi(fileName.substr(posicaoInicial +1, posicaoInicial + 8));
+                //     cout << "Tempo de análise: " << mil_sec - latestTime << "ms" << endl;
+                // }
             }
 
-            chrono::milliseconds ms = chrono::duration_cast< chrono::milliseconds >(chrono::system_clock::now().time_since_epoch() );
-            //removes the 5 first digits of ms
-            long long mil_sec = ms.count();
-            //cout << "Tempo de análise: " << mil_sec << endl;
-            mil_sec = mil_sec % 1000000000;
-            int analysisTime = mil_sec - time;
-            cout << "Tempo de análise: " << analysisTime << "ms" << endl;
-            
-            writeDataToCSV("tempo.csv", n_road, analysisTime);
-
-            //cout << "Tempo de análise: " << mil_sec << endl;
-            // if (fileName == "") {
-            //     cout << "Tempo de análise: não há arquivo de entrada" << endl;
-            // }
-            // else {
-            //     int latestTime = stoi(fileName.substr(posicaoInicial +1, posicaoInicial + 8));
-            //     cout << "Tempo de análise: " << mil_sec - latestTime << "ms" << endl;
-            // }
-        }
     }
     return 0;
 }

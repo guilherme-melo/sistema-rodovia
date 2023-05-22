@@ -47,6 +47,7 @@ std::string extractCarsValue(const std::string& jsonString) {
     std::size_t closingBracePos = jsonString.find('}', carsStartPos);
 
     std::string carsObject = jsonString.substr(carsStartPos+PROPERTY.length()+4, closingBracePos - openingBracePos + 1);
+    if (carsObject == "{  }") {carsObject="";};
     return carsObject;
 
 }
@@ -61,7 +62,7 @@ std::string extractTime(const std::string& jsonString) {
     std::size_t closingQuotePos = jsonString.find('"', openingQuotePos+1);
 
     std::string timeObject = jsonString.substr(openingQuotePos + 1, closingQuotePos - openingQuotePos - 1 );
-    
+    cout << timeObject << endl;
     return timeObject;
 }
 
@@ -114,6 +115,9 @@ Road splitData(string file)
     Road por_pista;
     string line;
     Lane *pista_anterior_ptr = nullptr;
+    if (file=="") {
+        return por_pista;
+    }
 
 
     //Split by ",
