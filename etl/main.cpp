@@ -50,12 +50,11 @@ int main() //thread calculations
         // Pegando os dados mais recentes
         vector<int> cicles(roads_new.size(), 0);
         int posicaoInicial;
-        vector<long long> times(roads_new.size(), 0);
         string file;
         
         //EXTRACT - Get the most recent document of each collection and save in positions_list (in parallel)
         for (int roadId = 0; roadId < roads_new.size(); roadId++) {
-            saveDataInHistoryVector(roads_new, roadId, ref(positions_list), ref(cicles[roadId]), ref(times[roadId]));
+            saveDataInHistoryVector(roads_new, roadId, ref(positions_list), ref(cicles[roadId]));
         }
 
         //deleteAllDocuments(roads_new[roadId]);
@@ -63,7 +62,6 @@ int main() //thread calculations
         //TRANSFORM - Compute riskColision for each document
         for (int roadId = 0; roadId < roads_new.size(); roadId++) {
             Road positions = positions_list[roadId]; 
-            cout << "debug1" << endl;
             Road* old_positions = &historyPositionsData[roadId];
             Road* old_speeds = &historySpeedsData[roadId];
 
@@ -111,7 +109,6 @@ int main() //thread calculations
                 collision_risk_list.push_back(collision_risk);
                 historySpeedsData[roadId] = speeds;
             }
-            cout << "debug2" << endl;
 
             //Atualizar historyData ao fim do loop
             historyPositionsData[roadId] = positions;
@@ -250,12 +247,9 @@ int main() //thread calculations
                     cout << "---------------" << endl;
                 }
             }
-
-            if (times[road]!=0) { 
-                long long ms = chrono::duration_cast< chrono::milliseconds >(chrono::system_clock::now().time_since_epoch()) / chrono::milliseconds(1);
-                int analysisTime = ms - times[road];
-                writeDataToCSV("tempo.csv", ms, positions_list[road], times[road]);
-            }
+            //long long ms = chrono::duration_cast< chrono::milliseconds >(chrono::system_clock::now().time_since_epoch()) / chrono::milliseconds(1);
+            //long analysisTime = ms - time;
+            //writeDataToCSV("tempo.csv", n_road, analysisTime);
         }
     }
     return 0;

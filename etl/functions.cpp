@@ -189,9 +189,8 @@ Road splitData(string file)
     return por_pista;
 }
 
-void saveDataInHistoryVector(vector<string> roads, int roadId, vector<Road> &positions_list, int& iter, long long& time) {
+void saveDataInHistoryVector(vector<string> roads, int roadId, vector<Road> &positions_list, int& iter) {
     string file = getMostRecentFile(roads[roadId],iter);
-    cout << "JSON LIDO: " << file << endl;
     if (file == "") {
         cout << "No file found" << endl;
         return;
@@ -202,9 +201,6 @@ void saveDataInHistoryVector(vector<string> roads, int roadId, vector<Road> &pos
         cout << "No car data found" << endl;
         return;
     }
-
-    time = stoll(extractTime(file));
-    cout << "TEMPO NO JSON: " << time << endl;
 
     Road positions = splitData(cars);
 
@@ -499,7 +495,7 @@ void deleteAllDocuments (const string &dirName) {
     mongocxx::stdx::optional<mongocxx::result::delete_result> result = coll.delete_many({});
 }
 
-void writeDataToCSV(const string& filename, int time, string n_roads, int time_road) {
+void writeDataToCSV(const string& filename, long time, int n_roads) {
     std::fstream file(filename, ios::app);
 
     if (!file) {
@@ -507,7 +503,7 @@ void writeDataToCSV(const string& filename, int time, string n_roads, int time_r
         return;
     }
 
-    file << n_roads << ',' << time << "," << time_road << std::endl;
+    file << n_roads << ',' << time << std::endl;
 
     file.close();
     std::cout << "Data written to " << filename << " successfully." << std::endl;

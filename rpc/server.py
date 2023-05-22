@@ -2,6 +2,7 @@ import grpc
 import rpc_pb2
 import rpc_pb2_grpc
 from pymongo import MongoClient
+from pymongo.write_concern import WriteConcern
 from concurrent import futures
 import json
 
@@ -36,7 +37,7 @@ class RoadSimServicer(rpc_pb2_grpc.RoadSimServicer):
             db.create_collection(COLLECTION_NAME)
         
         connection = db[COLLECTION_NAME]
-        cursor = connection.insert_one(json_message)
+        cursor = connection.with_options(write_concern=WriteConcern(w="majority")).insert_one(json_message)
         print(cursor.inserted_id)
         return response
 
