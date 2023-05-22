@@ -11,7 +11,7 @@ import rpc_pb2_grpc
 import signal
 import sys
 
-SERVER_IP = '10.42.0.1'
+SERVER_IP = 'localhost'
 SERVER_PORT = '50051'
 
 class vehicle:
