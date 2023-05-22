@@ -1,18 +1,20 @@
 # Sistema de monitoramento de rodovias
 
-Essa é uma aplicação que produz análises a partir de dados de tráfego simulados. O simulador dos dados (*mock*) foi implementado em Python e o sistema de monitoramento em C++.
+Essa é uma aplicação que produz análises a partir de dados de tráfego simulados. O simulador dos dados (*mock*), que atua como cliente do RPC, e o servidor (que insere os dados no banco), foram implementados em Python e o sistema de monitoramento (ETL) em C++.
 
-## Execução o ETL
+## Execução do ETL
 
-Para compilar o ETL, entre na raiz do projeto, crie uma pasta `data` vazia e execute no terminal:
+Para compilar o ETL, é necessário ter o driver MongoDB C++, cuja instalação é descrita em detalhes [nesse tutorial](https://www.mongodb.com/docs/drivers/cxx/).
+
+No nosso caso, por erros na distribuição do Linux Ubuntu utilizado para rodar o ETL, foi necessária a utilização do [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/) no comando de compilação. Portanto, entrando na raiz do projeto, o comando para compilar utilizado foi o seguinte:
 
 Linux:
-```g++ -pthread -o main etl/main.cpp```
+```c++ --std=c++11 -pthread etl/main.cpp $(pkg-config --cflags --libs libmongocxx)```
 
 E em seguida:
 
 Linux:
-```./main```
+```./a.out```
 
 No arquivo `main.cpp`, é possível personalizar o tamanho da fila do barbeiro alterando a variável `capacity` na linha 17.
 
@@ -48,7 +50,7 @@ Ao executar o arquivo `mock.py`, o usuário precisará definir somente o nome da
 
 ```
 ponte = road(name = "Ponte Rio-Niteroi", 
-             lanes = 4, 
+             lanes = 5, 
              size = 150000, 
              circles_to_remove_collision = 5, 
              prob_vehicle_surge = .5, 
