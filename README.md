@@ -2,6 +2,8 @@
 
 Essa é uma aplicação que produz análises a partir de dados de tráfego simulados. O simulador dos dados (*mock*), que atua como cliente do RPC, e o servidor (que insere os dados no banco), foram implementados em Python e o sistema de monitoramento (ETL) em C++.
 
+O Relatório para a etapa RPC do projeto é Relatorio\_Trabalho\_RPC\_Computação\_Escalável.pdf
+
 ## Execução do ETL
 
 Para compilar o ETL, é necessário ter o driver MongoDB C++, cuja instalação é descrita em detalhes [nesse tutorial](https://www.mongodb.com/docs/drivers/cxx/).
