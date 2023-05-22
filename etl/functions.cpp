@@ -73,13 +73,12 @@ std::string extractCarsValue(const std::string& jsonString) {
     std::size_t closingBracePos = jsonString.find('}', carsStartPos);
 
     std::string carsObject = jsonString.substr(carsStartPos+PROPERTY.length()+4, closingBracePos - openingBracePos + 1);
-    cout << "OBJETO: " << carsObject << endl;
     return carsObject;
 
 }
 
 
-std::string extractTime(const std::string& jsonString) {
+long long extractTime(string jsonString) {
     string PROPERTY = "time";
     std::size_t timeStartPos = jsonString.find(PROPERTY);
 
@@ -88,7 +87,7 @@ std::string extractTime(const std::string& jsonString) {
     std::size_t closingQuotePos = jsonString.find('"', openingQuotePos+1);
 
     std::string timeObject = jsonString.substr(openingQuotePos + 1, closingQuotePos - openingQuotePos -1);
-    return timeObject;
+    return stoll(timeObject);
 }
 
 std::string getPlateString(const std::string& input) {
@@ -189,12 +188,14 @@ Road splitData(string file)
     return por_pista;
 }
 
-void saveDataInHistoryVector(vector<string> roads, int roadId, vector<Road> &positions_list, int& iter) {
+void saveDataInHistoryVector(vector<string> roads, int roadId, vector<Road> &positions_list, int& iter, long long& time) {
     string file = getMostRecentFile(roads[roadId],iter);
     if (file == "") {
         cout << "No file found" << endl;
         return;
     }
+    
+    time = extractTime(file);
 
     string cars = extractCarsValue(file);
     if (cars == "{  }") {
